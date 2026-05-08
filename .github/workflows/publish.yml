@@ -1,0 +1,119 @@
+name: Publish Schema Release
+
+on:
+  repository_dispatch:
+    types: [schema_release_ready]
+
+permissions: {}
+
+concurrency:
+  group: schema-publish
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Validate dispatch payload
+        env:
+          SOURCE_REPO: ${{ github.event.client_payload.source_repo }}
+          TAG: ${{ github.event.client_payload.tag }}
+          ARTIFACT_NAME: ${{ github.event.client_payload.artifact_name }}
+          RELEASE_NOTES: ${{ github.event.client_payload.release_notes }}
+          RUN_ID: ${{ github.event.client_payload.run_id }}
+          RUN_ATTEMPT: ${{ github.event.client_payload.run_attempt }}
+        run: |
+          if [ "$SOURCE_REPO" != "deriv-com/deriv-api-v2" ]; then
+            echo "ERROR: Unexpected source_repo: '$SOURCE_REPO'" >&2
+            exit 1
+          fi
+          if ! echo "$TAG" | grep -qE '^production_'; then
+            echo "ERROR: Tag does not match production_* pattern: '$TAG'" >&2
+            exit 1
+          fi
+          if [ "$ARTIFACT_NAME" != "schemas.zip" ]; then
+            echo "ERROR: Unexpected artifact_name: '$ARTIFACT_NAME'" >&2
+            exit 1
+          fi
+          if [ -z "$RELEASE_NOTES" ]; then
+            echo "ERROR: release_notes payload is empty." >&2
+            exit 1
+          fi
+          echo "Payload validated. Source: $SOURCE_REPO | Tag: $TAG | Artifact: $ARTIFACT_NAME | Triggered by run: $RUN_ID (attempt $RUN_ATTEMPT)"
+
+      - name: Download schemas.zip from deriv-api-v2 release
+        env:
+          SCHEMA_PUBLISH_TOKEN: ${{ secrets.SCHEMA_PUBLISH_TOKEN }}
+          SOURCE_REPO: ${{ github.event.client_payload.source_repo }}
+          TAG: ${{ github.event.client_payload.tag }}
+          ARTIFACT_NAME: ${{ github.event.client_payload.artifact_name }}
+        run: |
+          RELEASE_JSON=$(GH_TOKEN="$SCHEMA_PUBLISH_TOKEN" \
+            gh api "repos/$SOURCE_REPO/releases/tags/$TAG")
+
+          ASSET_COUNT=$(echo "$RELEASE_JSON" \
+            | jq "[.assets[] | select(.name == \"$ARTIFACT_NAME\")] | length")
+
+          if [ "$ASSET_COUNT" -eq 0 ]; then
+            echo "ERROR: Asset '$ARTIFACT_NAME' not found in release '$TAG' of '$SOURCE_REPO'." >&2
+            exit 1
+          fi
+
+          if [ "$ASSET_COUNT" -gt 1 ]; then
+            echo "ERROR: Multiple assets named '$ARTIFACT_NAME' found in release '$TAG'." >&2
+            exit 1
+          fi
+
+          ASSET_URL=$(echo "$RELEASE_JSON" \
+            | jq -r ".assets[] | select(.name == \"$ARTIFACT_NAME\") | .url")
+
+          # Accept: application/octet-stream triggers redirect to the actual download URL
+          curl -sSfL --retry 3 --max-time 120 \
+            -H "Authorization: Bearer $SCHEMA_PUBLISH_TOKEN" \
+            -H "Accept: application/octet-stream" \
+            "$ASSET_URL" \
+            -o "$ARTIFACT_NAME"
+
+          echo "Downloaded $ARTIFACT_NAME ($(du -sh "$ARTIFACT_NAME" | cut -f1))."
+
+      - name: Validate artifact format and content
+        run: |
+          if ! file schemas.zip | grep -q 'Zip archive'; then
+            echo "ERROR: Downloaded file is not a valid ZIP archive." >&2
+            exit 1
+          fi
+
+          FILE_COUNT=$(unzip -l schemas.zip | tail -1 | awk '{print $2}')
+          if [ "$FILE_COUNT" -lt 5 ]; then
+            echo "ERROR: schemas.zip contains only $FILE_COUNT files — expected many more." >&2
+            exit 1
+          fi
+          echo "schemas.zip contains $FILE_COUNT files — format OK."
+
+      - name: Write release notes from payload
+        env:
+          RELEASE_NOTES: ${{ github.event.client_payload.release_notes }}
+        run: |
+          printf '%s' "$RELEASE_NOTES" > release_notes.md
+          echo "Release notes:"
+          cat release_notes.md
+
+      - name: Create release in deriv-api-schemas
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ github.event.client_payload.tag }}
+        run: |
+          if gh release view "$TAG" --repo "$GITHUB_REPOSITORY" > /dev/null 2>&1; then
+            echo "Release '$TAG' already exists — updating notes and replacing asset..."
+            gh release edit "$TAG" --repo "$GITHUB_REPOSITORY" --notes-file release_notes.md
+            gh release upload "$TAG" schemas.zip --repo "$GITHUB_REPOSITORY" --clobber
+          else
+            echo "Creating release '$TAG'..."
+            gh release create "$TAG" schemas.zip \
+              --repo "$GITHUB_REPOSITORY" \
+              --title "$TAG" \
+              --notes-file release_notes.md
+          fi
+          echo "Release '$TAG' published successfully."
