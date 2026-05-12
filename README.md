@@ -36,7 +36,7 @@ No authentication required — this repository is public.
 
 The `schemas/` directory in this repository always contains the latest versions
 of all schema files. You can browse them directly on the
-[main branch](../../tree/master/schemas).
+[master branch](../../tree/master/schemas).
 
 To track changes over time, view the
 [commit history for the schemas directory](../../commits/master/schemas).
