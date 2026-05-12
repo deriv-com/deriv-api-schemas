@@ -1,0 +1,84 @@
+{
+    "$schema": "http://json-schema.org/draft-04/schema#",
+    "title": "Contracts List (response)",
+    "description": "Get the list of all contract categories available for the trading platform.",
+    "type": "object",
+    "required": [
+        "echo_req",
+        "msg_type"
+    ],
+    "properties": {
+        "contracts_list": {
+            "title": "contracts_list",
+            "description": "List of all available contract categories for the trading platform.",
+            "type": "array",
+            "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                    "contract_category",
+                    "contract_types",
+                    "display_name"
+                ],
+                "properties": {
+                    "contract_category": {
+                        "description": "Internal code for the contract category.",
+                        "type": "string",
+                        "examples": [
+                            "callput",
+                            "multiplier",
+                            "digits",
+                            "turbos",
+                            "vanilla",
+                            "accumulator"
+                        ]
+                    },
+                    "contract_types": {
+                        "description": "List of contract type codes belonging to this category.",
+                        "type": "array",
+                        "items": {
+                            "type": "string",
+                            "examples": [
+                                "CALL",
+                                "PUT",
+                                "MULTUP",
+                                "MULTDOWN",
+                                "DIGITMATCH",
+                                "DIGITDIFF"
+                            ]
+                        },
+                        "minItems": 1
+                    },
+                    "display_name": {
+                        "description": "Human-readable name of the contract category.",
+                        "type": "string",
+                        "examples": [
+                            "Up/Down",
+                            "Multiply Up/Multiply Down",
+                            "Digits",
+                            "Turbos Options",
+                            "Vanilla Options",
+                            "Accumulator"
+                        ]
+                    }
+                }
+            },
+            "minItems": 1
+        },
+        "echo_req": {
+            "description": "Echo of the request made.",
+            "type": "object"
+        },
+        "msg_type": {
+            "description": "Action name of the request made.",
+            "type": "string",
+            "enum": [
+                "contracts_list"
+            ]
+        },
+        "req_id": {
+            "description": "Optional field sent in request to map to response, present only when request contains `req_id`.",
+            "type": "integer"
+        }
+    }
+}

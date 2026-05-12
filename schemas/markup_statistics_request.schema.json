@@ -1,0 +1,29 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Markup Statistics (request)",
+  "description": "Query parameters for the GET /applications/v1/markup-statistics endpoint.",
+  "type": "object",
+  "required": ["Deriv-App-ID", "date_from", "date_to"],
+  "properties": {
+    "Deriv-App-ID": {
+      "type": "string",
+      "description": "Application identifier used for Personal Access Token (PAT) authentication. Passed as a request header.",
+      "example": "YOUR_APP_ID"
+    },
+    "date_from": {
+      "type": "string",
+      "format": "date",
+      "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
+      "description": "Interval start date (YYYY-MM-DD), inclusive, UTC.",
+      "example": "2026-05-01"
+    },
+    "date_to": {
+      "type": "string",
+      "format": "date",
+      "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
+      "description": "Interval end date (YYYY-MM-DD), inclusive, UTC.",
+      "example": "2026-05-06"
+    }
+  },
+  "additionalProperties": false
+}

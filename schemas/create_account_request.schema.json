@@ -1,0 +1,50 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Create Account Request",
+  "description": "Request to create a new Options trading account",
+  "type": "object",
+  "properties": {
+    "headers": {
+      "type": "object",
+      "properties": {
+        "Deriv-App-ID": {
+          "type": "string",
+          "description": "Application identifier"
+        },
+        "Authorization": {
+          "type": "string",
+          "description": "Bearer token for authentication",
+          "example": "Bearer YOUR_AUTH_TOKEN"
+        },
+        "Content-Type": {
+          "type": "string",
+          "enum": ["application/json"],
+          "description": "Content type"
+        }
+      },
+      "required": ["Deriv-App-ID", "Authorization", "Content-Type"]
+    },
+    "body": {
+      "type": "object",
+      "properties": {
+        "currency": {
+          "type": "string",
+          "description": "Account currency",
+          "enum": ["USD"]
+        },
+        "group": {
+          "type": "string",
+          "description": "Account group",
+          "enum": ["row"]
+        },
+        "account_type": {
+          "type": "string",
+          "description": "Account type",
+          "enum": ["demo", "real"]
+        }
+      },
+      "required": ["currency", "group", "account_type"]
+    }
+  },
+  "required": ["headers", "body"]
+}

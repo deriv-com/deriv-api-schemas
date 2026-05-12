@@ -1,0 +1,40 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "WebSockets Response",
+  "description": "Response containing the WebSocket URL with embedded OTP for Options trading",
+  "type": "object",
+  "properties": {
+    "data": {
+      "type": "object",
+      "properties": {
+        "url": {
+          "type": "string",
+          "description": "WebSocket URL with embedded OTP — connect to this URL directly",
+          "example": "wss://api.derivws.com/trading/v1/options/ws/demo?otp=abc123xyz789"
+        }
+      },
+      "required": ["url"]
+    },
+    "meta": {
+      "type": "object",
+      "properties": {
+        "endpoint": {
+          "type": "string",
+          "description": "The current endpoint"
+        },
+        "method": {
+          "type": "string",
+          "enum": ["GET", "POST", "PUT", "DELETE"],
+          "description": "The current HTTP request method",
+          "example": "POST"
+        },
+        "timing": {
+          "type": "integer",
+          "description": "Time for the API to serve the request"
+        }
+      },
+      "required": ["endpoint", "method", "timing"]
+    }
+  },
+  "required": ["data", "meta"]
+}

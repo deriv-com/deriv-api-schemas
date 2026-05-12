@@ -1,0 +1,103 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Get Accounts Response",
+  "description": "Response containing all Options trading accounts",
+  "type": "object",
+  "properties": {
+    "data": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "account_id": {
+            "type": "string",
+            "description": "Account ID",
+            "example": "DOT90004580"
+          },
+          "balance": {
+            "type": "number",
+            "description": "Account balance",
+            "example": 10000
+          },
+          "currency": {
+            "type": "string",
+            "description": "Account currency",
+            "example": "USD"
+          },
+          "group": {
+            "type": "string",
+            "description": "Account group",
+            "example": "row"
+          },
+          "status": {
+            "type": "string",
+            "enum": ["active", "inactive"],
+            "description": "Account status",
+            "example": "active"
+          },
+          "account_type": {
+            "type": "string",
+            "enum": ["demo", "real"],
+            "description": "Account type",
+            "example": "demo"
+          },
+          "created_at": {
+            "type": "string",
+            "description": "Creation date"
+          },
+          "email": {
+            "type": "string",
+            "description": "User email address"
+          },
+          "last_access_at": {
+            "type": "string",
+            "description": "Last access date"
+          },
+          "name": {
+            "type": "string",
+            "description": "Client name"
+          },
+          "server_id": {
+            "type": "string",
+            "description": "Server ID"
+          },
+          "rights": {
+            "type": "object",
+            "properties": {},
+            "description": "User's rights"
+          }
+        },
+        "required": [
+          "account_id",
+          "balance",
+          "currency",
+          "group",
+          "status",
+          "account_type"
+        ]
+      }
+    },
+    "meta": {
+      "type": "object",
+      "properties": {
+        "endpoint": {
+          "type": "string",
+          "description": "The current endpoint",
+          "example": "/accounts"
+        },
+        "method": {
+          "type": "string",
+          "enum": ["GET", "POST", "PUT", "DELETE"],
+          "description": "The current HTTP request method",
+          "example": "GET"
+        },
+        "timing": {
+          "type": "integer",
+          "description": "Time for the API to serve the request",
+          "example": 222
+        }
+      },
+      "required": ["endpoint", "method", "timing"]
+    }
+  }
+}

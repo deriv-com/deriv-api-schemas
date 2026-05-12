@@ -1,0 +1,102 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Markup Statistics (response)",
+  "description": "Response from GET /applications/v1/markup-statistics.",
+  "type": "object",
+  "required": ["data", "meta"],
+  "properties": {
+    "data": {
+      "type": "object",
+      "description": "Markup and trading aggregates for the caller's applications over the requested date range. Root fields sum across all included apps; `breakdown` lists the same metrics per application.",
+      "required": [
+        "total_app_markup_usd",
+        "total_volume_usd",
+        "total_payout_usd",
+        "total_contract_count",
+        "total_client_count",
+        "breakdown"
+      ],
+      "properties": {
+        "total_app_markup_usd": {
+          "type": "number",
+          "description": "Sum of application markup attributed to all included apps in the interval."
+        },
+        "total_volume_usd": {
+          "type": "number",
+          "description": "Sum of contract volume (buy price in USD terms) across all included apps in the interval."
+        },
+        "total_payout_usd": {
+          "type": "number",
+          "description": "Sum of all potential payouts (in USD terms) across all included apps in the interval."
+        },
+        "total_contract_count": {
+          "type": "integer",
+          "description": "Total number of contracts counted toward the aggregates across all included apps."
+        },
+        "total_client_count": {
+          "type": "integer",
+          "description": "Number of distinct client accounts that traded under any included app in the interval."
+        },
+        "breakdown": {
+          "type": "array",
+          "description": "Per-application rows; each entry corresponds to one app_id with metrics for that app only.",
+          "items": {
+            "type": "object",
+            "required": [
+              "app_id",
+              "app_markup_usd",
+              "volume_usd",
+              "payout_usd",
+              "contract_count",
+              "client_count"
+            ],
+            "properties": {
+              "app_id": {
+                "type": "string",
+                "description": "Third-party application identifier."
+              },
+              "app_markup_usd": {
+                "type": "number",
+                "description": "Sum of application markup attributed to this app in USD over the requested interval."
+              },
+              "volume_usd": {
+                "type": "number",
+                "description": "Sum of contract volume (buy price in USD terms) for this app over the requested interval."
+              },
+              "payout_usd": {
+                "type": "number",
+                "description": "Sum of all potential payouts in USD terms for this app over the requested interval."
+              },
+              "contract_count": {
+                "type": "integer",
+                "description": "Number of contracts included in the aggregates for this app."
+              },
+              "client_count": {
+                "type": "integer",
+                "description": "Number of distinct client accounts that traded under this app in the interval."
+              }
+            }
+          }
+        }
+      }
+    },
+    "meta": {
+      "type": "object",
+      "description": "Response metadata.",
+      "properties": {
+        "endpoint": {
+          "type": "string",
+          "description": "The API endpoint path that was called."
+        },
+        "method": {
+          "type": "string",
+          "description": "The HTTP method used."
+        },
+        "timing": {
+          "type": "integer",
+          "description": "Request processing time in milliseconds."
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,30 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "title": "Balance (request)",
+  "description": "Get the account's balance",
+  "type": "object",
+  "auth_required": 1,
+  "auth_scopes": ["trade"],
+  "additionalProperties": false,
+  "required": ["balance"],
+  "properties": {
+    "balance": {
+      "description": "Must be `1`",
+      "type": "integer",
+      "enum": [1]
+    },
+    "subscribe": {
+      "description": "[Optional] If set to 1, will send updates whenever the balance changes.",
+      "type": "integer",
+      "enum": [0, 1]
+    },
+    "passthrough": {
+      "description": "[Optional] Used to pass data through the websocket, which may be retrieved via the `echo_req` output field.",
+      "type": "object"
+    },
+    "req_id": {
+      "description": "[Optional] Used to map request to response.",
+      "type": "integer"
+    }
+  }
+}
