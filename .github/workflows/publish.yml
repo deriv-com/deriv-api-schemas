@@ -45,12 +45,12 @@ jobs:
 
       - name: Download schemas.zip from deriv-api-v2 release
         env:
-          SCHEMA_PUBLISH_TOKEN: ${{ secrets.SCHEMA_PUBLISH_TOKEN }}
+          PERSONAL_ACCESS_TOKEN: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
           SOURCE_REPO: ${{ github.event.client_payload.source_repo }}
           TAG: ${{ github.event.client_payload.tag }}
           ARTIFACT_NAME: ${{ github.event.client_payload.artifact_name }}
         run: |
-          RELEASE_JSON=$(GH_TOKEN="$SCHEMA_PUBLISH_TOKEN" \
+          RELEASE_JSON=$(GH_TOKEN="$PERSONAL_ACCESS_TOKEN" \
             gh api "repos/$SOURCE_REPO/releases/tags/$TAG")
 
           ASSET_COUNT=$(echo "$RELEASE_JSON" \
@@ -71,7 +71,7 @@ jobs:
 
           # Accept: application/octet-stream triggers redirect to the actual download URL
           curl -sSfL --retry 3 --max-time 120 \
-            -H "Authorization: Bearer $SCHEMA_PUBLISH_TOKEN" \
+            -H "Authorization: Bearer $PERSONAL_ACCESS_TOKEN" \
             -H "Accept: application/octet-stream" \
             "$ASSET_URL" \
             -o "$ARTIFACT_NAME"
