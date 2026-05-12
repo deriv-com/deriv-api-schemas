@@ -8,13 +8,15 @@ permissions: {}
 
 concurrency:
   group: schema-publish
-  cancel-in-progress: false
+  cancel-in-progress: true
 
 jobs:
   publish:
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     permissions:
       contents: write
+      issues: write
     steps:
       - name: Validate dispatch payload
         env:
@@ -85,25 +87,56 @@ jobs:
             exit 1
           fi
 
-          FILE_COUNT=$(unzip -l schemas.zip | tail -1 | awk '{print $2}')
+          FILE_COUNT=$(unzip -l schemas.zip | grep -c '\.json$')
           if [ "$FILE_COUNT" -lt 5 ]; then
-            echo "ERROR: schemas.zip contains only $FILE_COUNT files — expected many more." >&2
+            echo "ERROR: schemas.zip contains only $FILE_COUNT JSON files — expected many more." >&2
             exit 1
           fi
-          echo "schemas.zip contains $FILE_COUNT files — format OK."
+          echo "schemas.zip contains $FILE_COUNT JSON files — format OK."
 
       - name: Write release notes from payload
         env:
           RELEASE_NOTES: ${{ github.event.client_payload.release_notes }}
         run: |
           printf '%s' "$RELEASE_NOTES" > release_notes.md
-          echo "Release notes:"
-          cat release_notes.md
+
+      - name: Checkout repository
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+        with:
+          ref: master
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Update schemas directory
+        env:
+          TAG: ${{ github.event.client_payload.tag }}
+        run: |
+          rm -rf schemas/
+          mkdir schemas
+          unzip -q schemas.zip -d schemas/
+          echo "Extracted $(find schemas -type f | wc -l | tr -d ' ') files into schemas/."
+
+      - name: Commit and push schema changes
+        id: commit
+        env:
+          TAG: ${{ github.event.client_payload.tag }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add schemas/
+          if git diff --cached --quiet; then
+            echo "No schema changes to commit."
+            echo "sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+          else
+            git commit -m "chore: update schemas for $TAG"
+            git push
+            echo "sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+          fi
 
       - name: Create release in deriv-api-schemas
         env:
-          GH_TOKEN: ${{ github.token }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           TAG: ${{ github.event.client_payload.tag }}
+          COMMIT_SHA: ${{ steps.commit.outputs.sha }}
         run: |
           if gh release view "$TAG" --repo "$GITHUB_REPOSITORY" > /dev/null 2>&1; then
             echo "Release '$TAG' already exists — updating notes and replacing asset..."
@@ -114,6 +147,24 @@ jobs:
             gh release create "$TAG" schemas.zip \
               --repo "$GITHUB_REPOSITORY" \
               --title "$TAG" \
+              --target "$COMMIT_SHA" \
               --notes-file release_notes.md
           fi
           echo "Release '$TAG' published successfully."
+
+      - name: Notify on failure
+        if: failure()
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAG: ${{ github.event.client_payload.tag }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          gh issue create \
+            --repo "$GITHUB_REPOSITORY" \
+            --title "Schema publish failed for $TAG" \
+            --body "The publish workflow failed for tag \`$TAG\`.
+
+          **Run:** $RUN_URL
+
+          Please investigate and re-trigger if needed." \
+            --label "bug"

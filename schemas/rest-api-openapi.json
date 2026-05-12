@@ -1,0 +1,987 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "version": "1.0.0",
+    "title": "Third Party API",
+    "description": "Deriv API provides programmatic access to trading services, account management, and market data across multiple trading platforms including CFDs, options, and peer-to-peer exchange. This REST API enables developers to integrate Deriv's trading infrastructure into their applications with comprehensive endpoints for account operations, trading activities, and real-time market information."
+  },
+  "paths": {
+    "/trading/v1/options/accounts": {
+      "get": {
+        "summary": "Get All Accounts",
+        "description": "Get all Options trading accounts",
+        "operationId": "3855391d-78e9-438b-b2db-b9aa41527add",
+        "security": [
+          {
+            "oauth2": [
+              "trade"
+            ]
+          }
+        ],
+        "parameters": [
+          {
+            "name": "Deriv-App-ID",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Application identifier"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/OptionsAccount"
+                      }
+                    },
+                    "meta": {
+                      "$ref": "#/components/schemas/Metadata"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "504": {
+            "description": "Gateway timeout",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "summary": "Create Account",
+        "description": "Create a new Options trading account",
+        "operationId": "800f51ec-2b2c-4493-9213-2f36a2c91cc0",
+        "security": [
+          {
+            "oauth2": [
+              "account_manage"
+            ]
+          }
+        ],
+        "parameters": [
+          {
+            "name": "Deriv-App-ID",
+            "in": "header",
+            "required": true,
+            "description": "Application identifier used for Personal Access Token (PAT) authentication.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "currency": {
+                    "type": "string",
+                    "description": "Account currency",
+                    "enum": [
+                      "USD"
+                    ]
+                  },
+                  "group": {
+                    "type": "string",
+                    "description": "Account group",
+                    "enum": [
+                      "row"
+                    ]
+                  },
+                  "account_type": {
+                    "type": "string",
+                    "description": "Account type",
+                    "enum": [
+                      "demo",
+                      "real"
+                    ]
+                  }
+                },
+                "required": [
+                  "currency",
+                  "group",
+                  "account_type"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK - returned when the account already exists (if the same parameters are provided)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/OptionsAccount"
+                    },
+                    "meta": {
+                      "$ref": "#/components/schemas/Metadata"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "201": {
+            "description": "Created - returned when a new account is created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/OptionsAccount"
+                      }
+                    },
+                    "meta": {
+                      "$ref": "#/components/schemas/Metadata"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "504": {
+            "description": "Gateway timeout",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/trading/v1/options/accounts/{account_id}/reset-demo-balance": {
+      "post": {
+        "summary": "Reset Demo Account Balance",
+        "description": "Reset balance for Options trading demo account",
+        "operationId": "8e112353-992d-41ce-a91c-26f6d02db73c",
+        "security": [
+          {
+            "oauth2": [
+              "trade"
+            ]
+          }
+        ],
+        "parameters": [
+          {
+            "name": "Deriv-App-ID",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Application identifier"
+          },
+          {
+            "name": "account_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Options Trading account ID"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK - Demo balance reset successfully"
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "504": {
+            "description": "Gateway timeout",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/trading/v1/options/accounts/{accountId}/otp": {
+      "post": {
+        "summary": "REST endpoint to get OTP for websocket authentication",
+        "description": "Generates a one-time password for authenticating websocket connections. Verifies account ownership, stores the OTP in Redis with a 120-second TTL, and returns a WebSocket URL with the OTP as a query parameter.",
+        "operationId": "d3b5f8e2-3c4a-4f7e-9f1e-2b6c8f9e4d2a",
+        "security": [
+          {
+            "oauth2": [
+              "trade"
+            ]
+          }
+        ],
+        "parameters": [
+          {
+            "name": "Deriv-App-ID",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Application identifier"
+          },
+          {
+            "name": "accountId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Options Trading account ID that OTP is requested for"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OTP generated successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "url": {
+                          "type": "string",
+                          "description": "OTP URL for websocket authentication"
+                        }
+                      },
+                      "required": [
+                        "url"
+                      ]
+                    },
+                    "meta": {
+                      "$ref": "#/components/schemas/Metadata"
+                    }
+                  },
+                  "required": [
+                    "data",
+                    "meta"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/trading/v1/options/ws/demo": {
+      "get": {
+        "summary": "WebSocket Endpoint for Options Trading Demo account",
+        "description": "WebSocket endpoint that handles WebSocket connections for demo account.",
+        "operationId": "56761c01-95d7-4201-80cb-2836d1b8c518",
+        "parameters": [
+          {
+            "name": "otp",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "One time password to authorize websocket connection. Token should be generated by endpoint /trading/v1/options/accounts/{accountId}/otp"
+          }
+        ],
+        "responses": {
+          "101": {
+            "description": "Switching Protocols - WebSocket connection established"
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized - Invalid or missing OTP",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/trading/v1/options/ws/real": {
+      "get": {
+        "summary": "WebSocket Endpoint for Options Trading Real account",
+        "description": "WebSocket endpoint that handles WebSocket connections for real account.",
+        "operationId": "5d2450ad-eb86-459b-a61f-74594a21f884",
+        "parameters": [
+          {
+            "name": "otp",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "One time password to authorize websocket connection. Token should be generated by endpoint /trading/v1/options/accounts/{accountId}/otp"
+          }
+        ],
+        "responses": {
+          "101": {
+            "description": "Switching Protocols - WebSocket connection established"
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized - Invalid or missing OTP",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/trading/v1/options/ws/public": {
+      "get": {
+        "summary": "WebSocket Endpoint for Options Trading unauthenticated public data",
+        "description": "Websocket endpoint for Options Trading public data that does not require authentication.",
+        "operationId": "56761c01-95d7-4201-80cb-2836d1b8c519",
+        "responses": {
+          "101": {
+            "description": "Switching Protocols - WebSocket connection established"
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/applications/v1/markup-statistics": {
+      "get": {
+        "summary": "Application markup statistics",
+        "description": "Aggregated per application statistics over a date range.",
+        "operationId": "026b23c5-dcd8-4dbf-8248-c6b057f9fa2a",
+        "security": [
+          {
+            "oauth2": [
+              "application_read"
+            ]
+          }
+        ],
+        "parameters": [
+          {
+            "name": "Deriv-App-ID",
+            "in": "header",
+            "required": true,
+            "description": "Application identifier used for Personal Access Token (PAT) authentication.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "date_from",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "date",
+              "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
+              "example": "2026-05-01"
+            },
+            "description": "Interval start date (YYYY-MM-DD), inclusive, UTC."
+          },
+          {
+            "name": "date_to",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "date",
+              "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
+              "example": "2026-05-06"
+            },
+            "description": "Interval end date (YYYY-MM-DD), inclusive, UTC."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Markup statistics payload",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/AppMarkupStatistics"
+                    },
+                    "meta": {
+                      "$ref": "#/components/schemas/Metadata"
+                    }
+                  },
+                  "required": [
+                    "data",
+                    "meta"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "504": {
+            "description": "Gateway timeout",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/health": {
+      "get": {
+        "summary": "Health Check",
+        "description": "Health check endpoint that returns 200 OK if the service is running.",
+        "operationId": "604a39f2-81db-4ca5-ba34-3f9b67694d1a",
+        "responses": {
+          "200": {
+            "description": "OK - Service is healthy",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string",
+                  "example": "OK"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "oauth2": {
+        "type": "oauth2",
+        "flows": {
+          "authorizationCode": {
+            "authorizationUrl": "https://oauth.deriv.com/oauth2/authorize",
+            "tokenUrl": "https://oauth.deriv.com/oauth2/token",
+            "scopes": {
+              "trade": "Access to trading operations",
+              "account_manage": "Write access for account creation and management",
+              "application_read": "Read-only access to your registered applications"
+            }
+          }
+        }
+      }
+    },
+    "schemas": {
+      "AppMarkupBreakdownRow": {
+        "type": "object",
+        "description": "Per-application aggregates included in the statistics window.",
+        "properties": {
+          "app_id": {
+            "type": "string",
+            "description": "Third-party application identifier"
+          },
+          "app_markup_usd": {
+            "type": "number",
+            "format": "double",
+            "description": "Sum of application markup attributed to this app in USD over the requested interval."
+          },
+          "volume_usd": {
+            "type": "number",
+            "format": "double",
+            "description": "Sum of contract volume (buy price in USD terms) for this app over the requested interval."
+          },
+          "payout_usd": {
+            "type": "number",
+            "format": "double",
+            "description": "Sum of all potential payouts in USD terms for this app over the requested interval."
+          },
+          "contract_count": {
+            "type": "integer",
+            "format": "uint64",
+            "description": "Number of contracts included in the aggregates for this app."
+          },
+          "client_count": {
+            "type": "integer",
+            "format": "uint64",
+            "description": "Number of distinct client accounts that traded under this app in the interval."
+          }
+        },
+        "required": [
+          "app_id",
+          "app_markup_usd",
+          "volume_usd",
+          "payout_usd",
+          "contract_count",
+          "client_count"
+        ]
+      },
+      "AppMarkupStatistics": {
+        "type": "object",
+        "description": "Markup and trading aggregates for the caller's applications over the requested date range. Root fields sum across all included apps; `breakdown` lists the same metrics per application.",
+        "properties": {
+          "total_app_markup_usd": {
+            "type": "number",
+            "format": "double",
+            "description": "Sum of application markup attributed to all included apps in the interval."
+          },
+          "total_volume_usd": {
+            "type": "number",
+            "format": "double",
+            "description": "Sum of contract volume (buy price in USD terms) across all included apps in the interval."
+          },
+          "total_payout_usd": {
+            "type": "number",
+            "format": "double",
+            "description": "Sum of all potential payouts (in USD terms) across all included apps in the interval."
+          },
+          "total_contract_count": {
+            "type": "integer",
+            "format": "uint64",
+            "description": "Total number of contracts counted toward the aggregates across all included apps."
+          },
+          "total_client_count": {
+            "type": "integer",
+            "format": "uint64",
+            "description": "Number of distinct client accounts that traded under any included app in the interval."
+          },
+          "breakdown": {
+            "type": "array",
+            "description": "Per-application rows; each entry corresponds to one `app_id` with metrics for that app only.",
+            "items": {
+              "$ref": "#/components/schemas/AppMarkupBreakdownRow"
+            }
+          }
+        },
+        "required": [
+          "total_app_markup_usd",
+          "total_volume_usd",
+          "total_payout_usd",
+          "total_contract_count",
+          "total_client_count",
+          "breakdown"
+        ]
+      },
+      "Metadata": {
+        "type": "object",
+        "properties": {
+          "endpoint": {
+            "type": "string",
+            "description": "The current endpoint",
+            "example": "/accounts"
+          },
+          "method": {
+            "type": "string",
+            "enum": [
+              "GET",
+              "POST",
+              "PUT",
+              "DELETE"
+            ],
+            "description": "The current HTTP request method",
+            "example": "GET"
+          },
+          "timing": {
+            "type": "integer",
+            "format": "uint64",
+            "description": "Time for the API to serve the request",
+            "example": 222
+          }
+        },
+        "required": [
+          "endpoint",
+          "method",
+          "timing"
+        ]
+      },
+      "Error": {
+        "type": "object",
+        "properties": {
+          "errors": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "status": {
+                  "type": "integer",
+                  "format": "int32",
+                  "default": 400,
+                  "description": "Error Status for the validation"
+                },
+                "code": {
+                  "type": "string",
+                  "enum": [
+                    "ValidationError",
+                    "FieldIsRequired",
+                    "Unauthorized",
+                    "RateLimit",
+                    "BadInputRequest",
+                    "InternalServerError",
+                    "AccountNotFound",
+                    "AccessDenied",
+                    "UnauthorizedAccess"
+                  ],
+                  "description": "Error Code for the validation",
+                  "example": "ValidationError"
+                },
+                "message": {
+                  "type": "string",
+                  "description": "Message for the error of the validation"
+                }
+              },
+              "required": [
+                "status",
+                "code",
+                "message"
+              ]
+            },
+            "description": "List of Errors from the request"
+          },
+          "meta": {
+            "$ref": "#/components/schemas/Metadata"
+          }
+        },
+        "required": [
+          "meta",
+          "errors"
+        ]
+      },
+      "OptionsAccount": {
+        "type": "object",
+        "properties": {
+          "account_id": {
+            "type": "string",
+            "description": "Account ID",
+            "example": "DOT90004580"
+          },
+          "balance": {
+            "type": "number",
+            "description": "Account balance",
+            "example": 10000
+          },
+          "currency": {
+            "type": "string",
+            "description": "Account currency",
+            "example": "USD"
+          },
+          "group": {
+            "type": "string",
+            "description": "Account group",
+            "example": "row"
+          },
+          "status": {
+            "type": "string",
+            "description": "Account status",
+            "enum": [
+              "active",
+              "inactive"
+            ],
+            "example": "active"
+          },
+          "account_type": {
+            "type": "string",
+            "description": "Account type",
+            "enum": [
+              "demo",
+              "real"
+            ],
+            "example": "demo"
+          },
+          "created_at": {
+            "type": "string",
+            "description": "Creation date"
+          },
+          "email": {
+            "type": "string",
+            "description": "User email address"
+          },
+          "last_access_at": {
+            "type": "string",
+            "description": "Last access date"
+          },
+          "name": {
+            "type": "string",
+            "description": "Client name"
+          },
+          "server_id": {
+            "type": "string",
+            "description": "Server ID"
+          },
+          "rights": {
+            "type": "object",
+            "properties": {},
+            "description": "User's rights"
+          }
+        },
+        "required": [
+          "account_id",
+          "balance",
+          "currency",
+          "group",
+          "status",
+          "account_type"
+        ]
+      }
+    }
+  }
+}

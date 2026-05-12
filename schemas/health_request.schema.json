@@ -1,0 +1,8 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Health Check Request",
+  "description": "GET /v1/health requires no request body or parameters.",
+  "type": "object",
+  "properties": {},
+  "additionalProperties": false
+}

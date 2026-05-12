@@ -1,0 +1,7 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Health Check Response",
+  "description": "Response for health check endpoint. Returns plain text indicating service status.",
+  "type": "string",
+  "example": "OK"
+}
