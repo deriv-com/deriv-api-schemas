@@ -1,0 +1,63 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Legacy Statement (request)",
+  "description": "Query parameters for GET /trading/v1/options/legacy/statement. Returns the historical transaction statement from the legacy options platform for the default account of the supplied loginid.",
+  "type": "object",
+  "required": ["Deriv-App-ID", "loginid"],
+  "properties": {
+    "Deriv-App-ID": {
+      "type": "string",
+      "description": "Application identifier. Passed as a request header.",
+      "example": "YOUR_APP_ID"
+    },
+    "loginid": {
+      "type": "string",
+      "pattern": "^[A-Z]+[0-9]+$",
+      "description": "Legacy loginid whose default-account statement to return. Must match `^[A-Z]+[0-9]+$`.",
+      "example": "CR12345"
+    },
+    "date_from": {
+      "type": "integer",
+      "format": "int64",
+      "minimum": 0,
+      "maximum": 2147483647,
+      "description": "Inclusive lower bound as epoch seconds. A row is included iff its true `transaction_time` is `>= date_from`. Defaults to 0 (all history). Values above 2147483647 (the year-2038 epoch limit) are rejected with HTTP 422."
+    },
+    "date_to": {
+      "type": "integer",
+      "format": "int64",
+      "minimum": 0,
+      "maximum": 2147483647,
+      "description": "Exclusive upper bound as epoch seconds. A row is included iff its true `transaction_time` is `< date_to`. Defaults to current time. Values above 2147483647 (the year-2038 epoch limit) are rejected with HTTP 422."
+    },
+    "action_type": {
+      "type": "string",
+      "enum": [
+        "buy",
+        "sell",
+        "deposit",
+        "withdrawal",
+        "transfer",
+        "hold",
+        "release",
+        "adjustment",
+        "escrow"
+      ],
+      "description": "Filter by transaction type. Defaults to all types."
+    },
+    "limit": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 999,
+      "default": 100,
+      "description": "Maximum number of transactions to return. Defaults to 100, maximum 999."
+    },
+    "offset": {
+      "type": "integer",
+      "minimum": 0,
+      "default": 0,
+      "description": "Number of transactions to skip before returning results. Use with `limit` for pagination."
+    }
+  },
+  "additionalProperties": false
+}

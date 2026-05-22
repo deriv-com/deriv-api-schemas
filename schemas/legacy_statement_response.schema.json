@@ -1,0 +1,101 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Legacy Statement (response)",
+  "description": "Statement of historical transactions from the legacy platform for the requested loginid's default account, ordered by `transaction_time` descending (ties broken by `transaction_id` descending).",
+  "type": "object",
+  "required": ["transactions", "count"],
+  "properties": {
+    "transactions": {
+      "type": "array",
+      "description": "Historical transactions for the requested loginid's default account.",
+      "items": {
+        "type": "object",
+        "required": [
+          "transaction_id",
+          "account_id",
+          "loginid",
+          "action_type"
+        ],
+        "properties": {
+          "transaction_id": {
+            "type": "integer",
+            "format": "int64",
+            "description": "Unique transaction identifier."
+          },
+          "account_id": {
+            "type": "integer",
+            "format": "int64",
+            "description": "Legacy account identifier (the default account of the requested loginid)."
+          },
+          "loginid": {
+            "type": "string",
+            "description": "Legacy client loginid as requested.",
+            "example": "CR12345"
+          },
+          "action_type": {
+            "type": "string",
+            "enum": [
+              "buy",
+              "sell",
+              "deposit",
+              "withdrawal",
+              "transfer",
+              "hold",
+              "release",
+              "adjustment",
+              "escrow"
+            ],
+            "description": "Transaction type."
+          },
+          "amount": {
+            "type": ["string", "null"],
+            "description": "Signed transaction amount as a decimal string."
+          },
+          "balance_after": {
+            "type": ["string", "null"],
+            "description": "Account balance after the transaction as a decimal string."
+          },
+          "transaction_time": {
+            "type": ["integer", "null"],
+            "format": "int64",
+            "description": "Transaction timestamp as epoch seconds, computed as the floor of the underlying high-precision database timestamp. Supplying this value as `date_from` on a subsequent request always re-includes the originating row."
+          },
+          "contract_id": {
+            "type": ["integer", "null"],
+            "format": "int64",
+            "description": "Financial market bet ID; null for non-trading transactions."
+          },
+          "currency": {
+            "type": ["string", "null"],
+            "description": "Account currency code (the default account's currency)."
+          },
+          "shortcode": {
+            "type": ["string", "null"],
+            "description": "Legacy contract shortcode; null for non-trading transactions."
+          },
+          "bet_class": {
+            "type": ["string", "null"],
+            "description": "Bet class (e.g. higher_lower_bet, digit_bet, multiplier); null for non-trading transactions."
+          },
+          "bet_type": {
+            "type": ["string", "null"],
+            "description": "Bet type (e.g. CALL, PUT, DIGITOVER); null for non-trading transactions."
+          },
+          "symbol": {
+            "type": ["string", "null"],
+            "description": "Underlying market symbol (e.g. R_100, frxEURUSD); null for non-trading transactions."
+          },
+          "app_id": {
+            "type": ["integer", "null"],
+            "format": "int64",
+            "description": "Identifier of the third-party application that originated the transaction; null if not recorded."
+          }
+        }
+      }
+    },
+    "count": {
+      "type": "integer",
+      "description": "Number of items in `transactions` (equals `transactions.length`). Not a total across pages."
+    }
+  }
+}

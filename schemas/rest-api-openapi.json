@@ -1,15 +1,36 @@
 {
   "openapi": "3.1.0",
   "info": {
-    "version": "1.0.0",
+    "version": "1.1.0",
     "title": "Third Party API",
     "description": "Deriv API provides programmatic access to trading services, account management, and market data across multiple trading platforms including CFDs, options, and peer-to-peer exchange. This REST API enables developers to integrate Deriv's trading infrastructure into their applications with comprehensive endpoints for account operations, trading activities, and real-time market information."
   },
+  "tags": [
+    {
+      "name": "Options Trading",
+      "description": "Options trading API: account management, OTP issuance for WebSocket auth, and WebSocket endpoints for trading and public market data."
+    },
+    {
+      "name": "Options Trading - Legacy",
+      "description": "Read-only access to a user's pre-upgrade options trading data (statement, accounts, upgrade status). These endpoints expose data sourced from the legacy platform and will be removed once the platform upgrade is complete for all users."
+    },
+    {
+      "name": "Reporting",
+      "description": "Aggregated business reporting endpoints (e.g. per-application markup statistics)."
+    },
+    {
+      "name": "System",
+      "description": "Operational endpoints for service health and infrastructure checks."
+    }
+  ],
   "paths": {
     "/trading/v1/options/accounts": {
       "get": {
-        "summary": "Get All Accounts",
-        "description": "Get all Options trading accounts",
+        "tags": [
+          "Options Trading"
+        ],
+        "summary": "List options trading accounts",
+        "description": "Returns every options trading account the authenticated user owns, including both real and demo accounts. Use this to discover the account IDs needed for placing trades, opening WebSocket connections, or resetting demo balances.",
         "operationId": "3855391d-78e9-438b-b2db-b9aa41527add",
         "security": [
           {
@@ -104,8 +125,11 @@
         }
       },
       "post": {
-        "summary": "Create Account",
-        "description": "Create a new Options trading account",
+        "tags": [
+          "Options Trading"
+        ],
+        "summary": "Create an options trading account",
+        "description": "Opens a new options trading account for the authenticated user. The account type (real or demo) and currency are taken from the request body. The newly created account is returned in the response.",
         "operationId": "800f51ec-2b2c-4493-9213-2f36a2c91cc0",
         "security": [
           {
@@ -259,8 +283,11 @@
     },
     "/trading/v1/options/accounts/{account_id}/reset-demo-balance": {
       "post": {
-        "summary": "Reset Demo Account Balance",
-        "description": "Reset balance for Options trading demo account",
+        "tags": [
+          "Options Trading"
+        ],
+        "summary": "Reset a demo account's balance",
+        "description": "Resets the balance of the specified demo account back to its default starting amount. Only demo accounts owned by the authenticated user can be reset; calling this on a real account will be rejected.",
         "operationId": "8e112353-992d-41ce-a91c-26f6d02db73c",
         "security": [
           {
@@ -358,8 +385,11 @@
     },
     "/trading/v1/options/accounts/{accountId}/otp": {
       "post": {
-        "summary": "REST endpoint to get OTP for websocket authentication",
-        "description": "Generates a one-time password for authenticating websocket connections. Verifies account ownership, stores the OTP in Redis with a 120-second TTL, and returns a WebSocket URL with the OTP as a query parameter.",
+        "tags": [
+          "Options Trading"
+        ],
+        "summary": "Issue a one-time password for WebSocket authentication",
+        "description": "Issues a short-lived one-time password (OTP) that authenticates a subsequent WebSocket connection for the specified account. The response includes the OTP and a ready-to-use WebSocket URL with the OTP attached as a query parameter. The OTP is valid for 120 seconds and can be used only once — open the WebSocket connection promptly after calling this endpoint.",
         "operationId": "d3b5f8e2-3c4a-4f7e-9f1e-2b6c8f9e4d2a",
         "security": [
           {
@@ -455,8 +485,11 @@
     },
     "/trading/v1/options/ws/demo": {
       "get": {
-        "summary": "WebSocket Endpoint for Options Trading Demo account",
-        "description": "WebSocket endpoint that handles WebSocket connections for demo account.",
+        "tags": [
+          "Options Trading"
+        ],
+        "summary": "Open a WebSocket connection for a demo account",
+        "description": "Upgrades the HTTP request to a WebSocket connection scoped to a demo options trading account. Authentication requires a valid OTP obtained from the OTP endpoint, passed as the `otp` query parameter. Use this channel to subscribe to real-time market data, send trading instructions, and receive order and position updates for the demo account.",
         "operationId": "56761c01-95d7-4201-80cb-2836d1b8c518",
         "parameters": [
           {
@@ -498,8 +531,11 @@
     },
     "/trading/v1/options/ws/real": {
       "get": {
-        "summary": "WebSocket Endpoint for Options Trading Real account",
-        "description": "WebSocket endpoint that handles WebSocket connections for real account.",
+        "tags": [
+          "Options Trading"
+        ],
+        "summary": "Open a WebSocket connection for a real account",
+        "description": "Upgrades the HTTP request to a WebSocket connection scoped to a real-money options trading account. Authentication requires a valid OTP obtained from the OTP endpoint, passed as the `otp` query parameter. Use this channel to subscribe to real-time market data, send trading instructions, and receive order and position updates. Trades placed over this channel settle against the account's real balance.",
         "operationId": "5d2450ad-eb86-459b-a61f-74594a21f884",
         "parameters": [
           {
@@ -541,8 +577,11 @@
     },
     "/trading/v1/options/ws/public": {
       "get": {
-        "summary": "WebSocket Endpoint for Options Trading unauthenticated public data",
-        "description": "Websocket endpoint for Options Trading public data that does not require authentication.",
+        "tags": [
+          "Options Trading"
+        ],
+        "summary": "Open a public WebSocket connection (no authentication)",
+        "description": "Upgrades the HTTP request to a WebSocket connection for public options trading data. No authentication or OTP is required. Use this channel to stream real-time market data — for example quotes, ticks, and contract metadata — without needing a user account. Account-scoped actions such as placing trades or reading balances are not available on this channel.",
         "operationId": "56761c01-95d7-4201-80cb-2836d1b8c519",
         "responses": {
           "101": {
@@ -561,10 +600,378 @@
         }
       }
     },
+    "/trading/v1/options/legacy/statement": {
+      "get": {
+        "tags": [
+          "Options Trading - Legacy"
+        ],
+        "summary": "Get the legacy transaction statement for a loginid",
+        "description": "Returns the historical transaction statement from the legacy options platform for the authenticated user, scoped to the default account of the loginid supplied in the `loginid` query parameter. Results can be filtered by transaction type and by a date range, expressed as a half-open interval `[date_from, date_to)` using epoch seconds. Pagination uses `limit` (default 100, maximum 999) and `offset`. Transactions are returned newest first, with the most recent `transaction_time` at the top and ties broken by `id` in descending order. Legacy endpoint — will be removed once the platform upgrade is complete for all users.",
+        "operationId": "otp-history-statement",
+        "security": [
+          {
+            "oauth2": [
+              "trade"
+            ]
+          }
+        ],
+        "parameters": [
+          {
+            "name": "Deriv-App-ID",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Application identifier"
+          },
+          {
+            "name": "loginid",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[A-Z]+[0-9]+$",
+              "examples": [
+                "CR12345"
+              ]
+            },
+            "description": "Legacy loginid whose default-account statement to return. Must match `^[A-Z]+[0-9]+$`."
+          },
+          {
+            "name": "date_from",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int64",
+              "minimum": 0,
+              "maximum": 2147483647
+            },
+            "description": "Inclusive lower bound as epoch seconds. A row is included iff its true `transaction_time` is `>= date_from`. Defaults to 0 (all history). Values above 2147483647 (the year-2038 epoch limit) are rejected with HTTP 422."
+          },
+          {
+            "name": "date_to",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int64",
+              "minimum": 0,
+              "maximum": 2147483647
+            },
+            "description": "Exclusive upper bound as epoch seconds. A row is included iff its true `transaction_time` is `< date_to`. Defaults to current time. Values above 2147483647 (the year-2038 epoch limit) are rejected with HTTP 422."
+          },
+          {
+            "name": "action_type",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "buy",
+                "sell",
+                "deposit",
+                "withdrawal",
+                "transfer",
+                "hold",
+                "release",
+                "adjustment",
+                "escrow"
+              ]
+            },
+            "description": "Filter by transaction type. Defaults to all types."
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 999,
+              "default": 100
+            },
+            "description": "Maximum number of transactions to return. Defaults to 100, maximum 999."
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "default": 0
+            },
+            "description": "Number of transactions to skip before returning results. Use with `limit` for pagination."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Statement payload",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LegacyStatementResponse"
+                },
+                "example": {
+                  "transactions": [
+                    {
+                      "transaction_id": 22859,
+                      "account_id": 202201,
+                      "loginid": "CR90000109",
+                      "action_type": "sell",
+                      "amount": "0.00",
+                      "balance_after": "9558.62",
+                      "transaction_time": 1779169387,
+                      "contract_id": 13039,
+                      "currency": "USD",
+                      "shortcode": "PUT_1HZ100V_19.12_1779162186_1779169386_S0P_0",
+                      "bet_class": "higher_lower_bet",
+                      "bet_type": "PUT",
+                      "symbol": "1HZ100V",
+                      "app_id": 2
+                    }
+                  ],
+                  "count": 100
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad input (e.g. malformed loginid)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "User or default account not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "User migration is pending or has failed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Request validation error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Service temporarily unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/trading/v1/options/legacy/accounts": {
+      "get": {
+        "tags": [
+          "Options Trading - Legacy"
+        ],
+        "summary": "List the authenticated user's legacy accounts",
+        "description": "Returns the authenticated user's accounts on the legacy options platform, grouped by loginid. Each account includes its `account_id` and `currency`. Loginids that have no accounts are omitted. When the user has no resolvable legacy accounts, the response is `{\"loginids\": {}}`. Use the returned loginids with the legacy statement endpoint to fetch historical transactions. Legacy endpoint — will be removed once the platform upgrade is complete for all users.",
+        "operationId": "otp-history-accounts",
+        "security": [
+          {
+            "oauth2": [
+              "trade"
+            ]
+          }
+        ],
+        "parameters": [
+          {
+            "name": "Deriv-App-ID",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Application identifier"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Accounts grouped by loginid",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LegacyAccountsResponse"
+                },
+                "example": {
+                  "loginids": {
+                    "CR90000123": [
+                      {
+                        "account_id": 123,
+                        "currency": "USD"
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "User has no legacy account mapping",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "User migration is pending or has failed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Service temporarily unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/trading/v1/options/legacy/migration-status": {
+      "get": {
+        "tags": [
+          "Options Trading - Legacy"
+        ],
+        "summary": "Get the user's platform upgrade status",
+        "description": "Returns the authenticated user's current platform upgrade status. The response always has HTTP 200 and the shape `{\"status\": <state>}`, where `<state>` is one of `complete`, `pending`, `failed`, or `not_applicable`. These states are normal answers, not error conditions — for example, `pending` means the upgrade is still in progress, and `not_applicable` means the user never had a legacy account in the first place. Responses are returned with `Cache-Control: no-store`, so polling clients always see fresh state. Legacy endpoint — will be removed once the platform upgrade is complete for all users.",
+        "operationId": "otp-history-migration-status",
+        "security": [
+          {
+            "oauth2": [
+              "trade"
+            ]
+          }
+        ],
+        "parameters": [
+          {
+            "name": "Deriv-App-ID",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Application identifier"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Current migration status",
+            "headers": {
+              "Cache-Control": {
+                "description": "Always set to `no-store` so polling clients are not served stale state.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "no-store"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LegacyMigrationStatusResponse"
+                },
+                "example": {
+                  "status": "complete"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Service temporarily unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/applications/v1/markup-statistics": {
       "get": {
-        "summary": "Application markup statistics",
-        "description": "Aggregated per application statistics over a date range.",
+        "tags": [
+          "Reporting"
+        ],
+        "summary": "Get markup statistics per application",
+        "description": "Returns aggregated markup statistics over a date range, broken down per application registered by the authenticated user. Use this to track how much markup revenue each of your registered applications has generated. The date range is specified via query parameters.",
         "operationId": "026b23c5-dcd8-4dbf-8248-c6b057f9fa2a",
         "security": [
           {
@@ -591,7 +998,9 @@
               "type": "string",
               "format": "date",
               "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
-              "example": "2026-05-01"
+              "examples": [
+                "2026-05-01"
+              ]
             },
             "description": "Interval start date (YYYY-MM-DD), inclusive, UTC."
           },
@@ -603,7 +1012,9 @@
               "type": "string",
               "format": "date",
               "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
-              "example": "2026-05-06"
+              "examples": [
+                "2026-05-06"
+              ]
             },
             "description": "Interval end date (YYYY-MM-DD), inclusive, UTC."
           }
@@ -696,8 +1107,11 @@
     },
     "/v1/health": {
       "get": {
-        "summary": "Health Check",
-        "description": "Health check endpoint that returns 200 OK if the service is running.",
+        "tags": [
+          "System"
+        ],
+        "summary": "Service health check",
+        "description": "Returns HTTP 200 when the gateway is up and able to serve traffic. Intended for use by load balancers, uptime monitors, and infrastructure probes. The endpoint requires no authentication and returns no body payload of interest — the HTTP status alone is the signal.",
         "operationId": "604a39f2-81db-4ca5-ba34-3f9b67694d1a",
         "responses": {
           "200": {
@@ -706,7 +1120,9 @@
               "text/plain": {
                 "schema": {
                   "type": "string",
-                  "example": "OK"
+                  "examples": [
+                    "OK"
+                  ]
                 }
               }
             }
@@ -822,13 +1238,206 @@
           "breakdown"
         ]
       },
+      "LegacyAccountItem": {
+        "type": "object",
+        "description": "A single account from the legacy platform.",
+        "properties": {
+          "account_id": {
+            "type": "integer",
+            "format": "int64",
+            "description": "Legacy account identifier."
+          },
+          "currency": {
+            "type": "string",
+            "description": "Account currency code (e.g. USD, BTC)."
+          }
+        },
+        "required": [
+          "account_id",
+          "currency"
+        ]
+      },
+      "LegacyAccountsResponse": {
+        "type": "object",
+        "description": "Legacy accounts grouped by loginid. Loginids with no resolvable accounts are omitted.",
+        "properties": {
+          "loginids": {
+            "type": "object",
+            "description": "Map of loginid (e.g. CR0001) to its accounts.",
+            "additionalProperties": {
+              "type": "array",
+              "items": {
+                "$ref": "#/components/schemas/LegacyAccountItem"
+              }
+            }
+          }
+        },
+        "required": [
+          "loginids"
+        ]
+      },
+      "LegacyMigrationStatusResponse": {
+        "type": "object",
+        "description": "Current state of the user's platform upgrade. All known states (including pending, failed, and not_applicable) are returned with HTTP 200.",
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": [
+              "complete",
+              "pending",
+              "failed",
+              "not_applicable"
+            ],
+            "description": "Migration lifecycle state."
+          }
+        },
+        "required": [
+          "status"
+        ]
+      },
+      "LegacyTransactionItem": {
+        "type": "object",
+        "description": "A single historical transaction from the legacy platform for the requested loginid's default account.",
+        "properties": {
+          "transaction_id": {
+            "type": "integer",
+            "format": "int64",
+            "description": "Unique transaction identifier."
+          },
+          "account_id": {
+            "type": "integer",
+            "format": "int64",
+            "description": "Legacy account identifier (the default account of the requested loginid)."
+          },
+          "loginid": {
+            "type": "string",
+            "description": "Legacy client loginid as requested (e.g. CR12345)."
+          },
+          "action_type": {
+            "type": "string",
+            "enum": [
+              "buy",
+              "sell",
+              "deposit",
+              "withdrawal",
+              "transfer",
+              "hold",
+              "release",
+              "adjustment",
+              "escrow"
+            ],
+            "description": "Transaction type."
+          },
+          "amount": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "Signed transaction amount as a decimal string."
+          },
+          "balance_after": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "Account balance after the transaction as a decimal string."
+          },
+          "transaction_time": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "format": "int64",
+            "description": "Transaction timestamp as epoch seconds, computed as the floor of the underlying high-precision database timestamp. Supplying this value as `date_from` on a subsequent request always re-includes the originating row."
+          },
+          "contract_id": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "format": "int64",
+            "description": "Financial market bet ID; null for non-trading transactions."
+          },
+          "currency": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "Account currency code (the default account's currency)."
+          },
+          "shortcode": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "Legacy contract shortcode; null for non-trading transactions."
+          },
+          "bet_class": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "Bet class (e.g. higher_lower_bet, digit_bet, multiplier); null for non-trading transactions."
+          },
+          "bet_type": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "Bet type (e.g. CALL, PUT, DIGITOVER); null for non-trading transactions."
+          },
+          "symbol": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "Underlying market symbol (e.g. R_100, frxEURUSD); null for non-trading transactions."
+          },
+          "app_id": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "format": "int64",
+            "description": "Identifier of the third-party application that originated the transaction; null if not recorded."
+          }
+        },
+        "required": [
+          "transaction_id",
+          "account_id",
+          "loginid",
+          "action_type"
+        ]
+      },
+      "LegacyStatementResponse": {
+        "type": "object",
+        "description": "Statement of historical transactions from the legacy platform for the requested loginid's default account, ordered by `transaction_time` descending (ties broken by `id` descending).",
+        "properties": {
+          "transactions": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/LegacyTransactionItem"
+            }
+          },
+          "count": {
+            "type": "integer",
+            "description": "Number of items in `transactions` (equals `transactions.length`). Not a total across pages."
+          }
+        },
+        "required": [
+          "transactions",
+          "count"
+        ]
+      },
       "Metadata": {
         "type": "object",
         "properties": {
           "endpoint": {
             "type": "string",
             "description": "The current endpoint",
-            "example": "/accounts"
+            "examples": [
+              "/trading/v1/options/accounts"
+            ]
           },
           "method": {
             "type": "string",
@@ -839,13 +1448,17 @@
               "DELETE"
             ],
             "description": "The current HTTP request method",
-            "example": "GET"
+            "examples": [
+              "GET"
+            ]
           },
           "timing": {
             "type": "integer",
             "format": "uint64",
-            "description": "Time for the API to serve the request",
-            "example": 222
+            "description": "Time for the API to serve the request in milliseconds.",
+            "examples": [
+              222
+            ]
           }
         },
         "required": [
@@ -866,7 +1479,7 @@
                   "type": "integer",
                   "format": "int32",
                   "default": 400,
-                  "description": "Error Status for the validation"
+                  "description": "HTTP-equivalent status code for this error entry."
                 },
                 "code": {
                   "type": "string",
@@ -881,12 +1494,18 @@
                     "AccessDenied",
                     "UnauthorizedAccess"
                   ],
-                  "description": "Error Code for the validation",
-                  "example": "ValidationError"
+                  "description": "One of the predefined error codes.",
+                  "examples": [
+                    "ValidationError"
+                  ]
                 },
                 "message": {
                   "type": "string",
-                  "description": "Message for the error of the validation"
+                  "description": "Human-readable description of the error. Intended for logs and developer-facing surfaces; not guaranteed stable across versions."
+                },
+                "field": {
+                  "type": "string",
+                  "description": "Request element that caused the error (query param name, path param name, header name, or dot-joined body path). Omitted when not attributable to a single field."
                 }
               },
               "required": [
@@ -912,22 +1531,30 @@
           "account_id": {
             "type": "string",
             "description": "Account ID",
-            "example": "DOT90004580"
+            "examples": [
+              "DOT90004580"
+            ]
           },
           "balance": {
             "type": "number",
             "description": "Account balance",
-            "example": 10000
+            "examples": [
+              10000
+            ]
           },
           "currency": {
             "type": "string",
             "description": "Account currency",
-            "example": "USD"
+            "examples": [
+              "USD"
+            ]
           },
           "group": {
             "type": "string",
             "description": "Account group",
-            "example": "row"
+            "examples": [
+              "row"
+            ]
           },
           "status": {
             "type": "string",
@@ -936,7 +1563,9 @@
               "active",
               "inactive"
             ],
-            "example": "active"
+            "examples": [
+              "active"
+            ]
           },
           "account_type": {
             "type": "string",
@@ -945,7 +1574,9 @@
               "demo",
               "real"
             ],
-            "example": "demo"
+            "examples": [
+              "demo"
+            ]
           },
           "created_at": {
             "type": "string",

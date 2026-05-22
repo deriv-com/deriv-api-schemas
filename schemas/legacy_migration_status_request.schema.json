@@ -1,0 +1,15 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Legacy Migration Status (request)",
+  "description": "Request headers for GET /trading/v1/options/legacy/migration-status. Returns the current state of the user's platform upgrade.",
+  "type": "object",
+  "required": ["Deriv-App-ID"],
+  "properties": {
+    "Deriv-App-ID": {
+      "type": "string",
+      "description": "Application identifier. Passed as a request header.",
+      "example": "YOUR_APP_ID"
+    }
+  },
+  "additionalProperties": false
+}

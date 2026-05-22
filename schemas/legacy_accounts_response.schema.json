@@ -1,0 +1,29 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Legacy Accounts (response)",
+  "description": "Legacy accounts grouped by loginid. Loginids with no resolvable accounts are omitted.",
+  "type": "object",
+  "required": ["loginids"],
+  "properties": {
+    "loginids": {
+      "type": "object",
+      "description": "Map of loginid (e.g. `CR0001`) to its legacy accounts.",
+      "additionalProperties": {
+        "type": "array",
+        "items": {
+          "type": "object",
+          "properties": {
+            "account_id": {
+              "type": "integer",
+              "description": "Legacy account identifier."
+            },
+            "currency": {
+              "type": "string",
+              "description": "ISO currency code of the account."
+            }
+          }
+        }
+      }
+    }
+  }
+}

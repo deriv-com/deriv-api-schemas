@@ -1,0 +1,15 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Legacy Accounts (request)",
+  "description": "Request headers for GET /trading/v1/options/legacy/accounts. Returns the authenticated user's legacy accounts grouped by loginid.",
+  "type": "object",
+  "required": ["Deriv-App-ID"],
+  "properties": {
+    "Deriv-App-ID": {
+      "type": "string",
+      "description": "Application identifier. Passed as a request header.",
+      "example": "YOUR_APP_ID"
+    }
+  },
+  "additionalProperties": false
+}
