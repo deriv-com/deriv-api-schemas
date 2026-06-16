@@ -18,6 +18,16 @@ jobs:
       contents: write
       issues: write
     steps:
+      # Checkout first so the working directory is the repo. actions/checkout
+      # cleans the workspace before checking out, so it MUST run before any step
+      # that writes files here (schemas.zip, release_notes.md) — otherwise those
+      # files get deleted. See: publish failure on production_v20260608 tag.
+      - name: Checkout repository
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+        with:
+          ref: master
+          token: ${{ secrets.GITHUB_TOKEN }}
+
       - name: Validate dispatch payload
         env:
           SOURCE_REPO: ${{ github.event.client_payload.source_repo }}
@@ -99,12 +109,6 @@ jobs:
           RELEASE_NOTES: ${{ github.event.client_payload.release_notes }}
         run: |
           printf '%s' "$RELEASE_NOTES" > release_notes.md
-
-      - name: Checkout repository
-        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
-        with:
-          ref: master
-          token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Update schemas directory
         env:
