@@ -1,0 +1,35 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "title": "Auto Get (request)",
+  "description": "Retrieve details for a specific automated trading run, with optional subscription to real-time updates",
+  "type": "object",
+  "auth_required": 1,
+  "auth_scopes": ["trade"],
+  "additionalProperties": false,
+  "required": ["auto_get", "run_id"],
+  "properties": {
+    "auto_get": {
+      "description": "Must be `1`",
+      "type": "integer",
+      "enum": [1]
+    },
+    "run_id": {
+      "description": "The run ID to retrieve.",
+      "type": "string",
+      "pattern": "^[\\w-]{1,128}$"
+    },
+    "subscribe": {
+      "description": "[Optional] If set to `1`, will stream run updates (new contracts purchased, status changes) until the run ends or `forget` is called.",
+      "type": "integer",
+      "enum": [1]
+    },
+    "passthrough": {
+      "description": "[Optional] Used to pass data through the websocket, which may be retrieved via the `echo_req` output field.",
+      "type": "object"
+    },
+    "req_id": {
+      "description": "[Optional] Used to map request to response.",
+      "type": "integer"
+    }
+  }
+}
