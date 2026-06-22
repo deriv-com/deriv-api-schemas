@@ -1,0 +1,44 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Agent Statistics Response",
+  "description": "All countries and currencies currently covered by at least one active payment agent. Use these values to discover valid `currency` and `country` filter values when listing agents.",
+  "type": "object",
+  "properties": {
+    "data": {
+      "type": "object",
+      "properties": {
+        "available_countries": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "ISO 3166-1 alpha-2 country codes in lowercase covered by at least one active payment agent.",
+          "example": ["au", "id", "ng", "pk"]
+        },
+        "available_currencies": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Sorted, deduplicated list of ISO 4217 currency codes supported by at least one active payment agent.",
+          "example": ["EUR", "IDR", "NGN", "USD"]
+        }
+      },
+      "required": ["available_countries", "available_currencies"]
+    },
+    "metadata": {
+      "type": "object",
+      "description": "Request metadata included in every response.",
+      "properties": {
+        "endpoint": { "type": "string", "description": "The request URI." },
+        "method": {
+          "type": "string",
+          "enum": ["GET", "POST", "PUT", "DELETE", "PATCH"],
+          "description": "The HTTP method used for the request."
+        },
+        "timing": {
+          "type": "number",
+          "description": "Time in seconds for the service to process the request."
+        }
+      },
+      "required": ["endpoint", "method", "timing"]
+    }
+  },
+  "required": ["data", "metadata"]
+}

@@ -1,0 +1,110 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Get Payment Agent Response",
+  "description": "Full payment agent profile. Always includes a `currencies` array (one entry per supported currency with commission and limit settings) and a `urls` array. May include agents not publicly listed in the directory.",
+  "type": "object",
+  "properties": {
+    "data": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer",
+          "description": "Unique identifier of the payment agent.",
+          "example": 42
+        },
+        "created_at": {
+          "type": "integer",
+          "description": "Epoch timestamp (milliseconds) when the agent was registered.",
+          "example": 1717000000000
+        },
+        "is_listed": {
+          "type": ["boolean", "null"],
+          "description": "Whether the agent appears in the public agent directory."
+        },
+        "name": {
+          "type": ["string", "null"],
+          "description": "Display name of the payment agent.",
+          "example": "Agent One"
+        },
+        "information": {
+          "type": ["string", "null"],
+          "description": "Free-text description of the agent's services and operating details."
+        },
+        "email": {
+          "type": ["string", "null"],
+          "description": "Contact email address."
+        },
+        "phone_numbers": {
+          "type": ["array", "null"],
+          "items": { "type": "string" },
+          "description": "Contact phone numbers."
+        },
+        "payment_methods": {
+          "type": ["array", "null"],
+          "items": { "type": "string" },
+          "description": "Payment methods accepted by this agent."
+        },
+        "countries": {
+          "type": ["array", "null"],
+          "items": { "type": "string" },
+          "description": "ISO 3166-1 alpha-2 country codes in lowercase in which this agent operates."
+        },
+        "urls": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Website URLs associated with the agent."
+        },
+        "currencies": {
+          "type": "array",
+          "description": "Commission and limit settings for each currency the agent supports.",
+          "items": {
+            "type": "object",
+            "properties": {
+              "currency": {
+                "type": "string",
+                "description": "ISO 4217 currency code.",
+                "example": "USD"
+              },
+              "deposit_commission": {
+                "type": ["number", "null"],
+                "description": "Commission percentage charged by the agent on deposits. Null if no deposit commission applies."
+              },
+              "withdrawal_commission": {
+                "type": ["number", "null"],
+                "description": "Commission percentage charged by the agent on withdrawals. Null if no withdrawal commission applies."
+              },
+              "withdrawal_minimum": {
+                "type": ["string", "null"],
+                "description": "Minimum withdrawal amount as a decimal string. Null if no minimum is enforced."
+              },
+              "withdrawal_maximum": {
+                "type": ["string", "null"],
+                "description": "Maximum withdrawal amount as a decimal string. Null if no maximum is enforced."
+              }
+            },
+            "required": ["currency"]
+          }
+        }
+      },
+      "required": ["id", "urls", "currencies"]
+    },
+    "metadata": {
+      "type": "object",
+      "description": "Request metadata included in every response.",
+      "properties": {
+        "endpoint": { "type": "string", "description": "The request URI." },
+        "method": {
+          "type": "string",
+          "enum": ["GET", "POST", "PUT", "DELETE", "PATCH"],
+          "description": "The HTTP method used for the request."
+        },
+        "timing": {
+          "type": "number",
+          "description": "Time in seconds for the service to process the request."
+        }
+      },
+      "required": ["endpoint", "method", "timing"]
+    }
+  },
+  "required": ["data", "metadata"]
+}

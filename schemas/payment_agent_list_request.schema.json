@@ -1,0 +1,50 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "List Payment Agents Request",
+  "description": "Request to list active payment agents that support a currency",
+  "type": "object",
+  "properties": {
+    "headers": {
+      "type": "object",
+      "properties": {
+        "Deriv-App-ID": {
+          "type": "string",
+          "description": "Application identifier"
+        },
+        "Authorization": {
+          "type": "string",
+          "description": "Bearer token for authentication",
+          "example": "Bearer YOUR_AUTH_TOKEN"
+        }
+      },
+      "required": ["Deriv-App-ID", "Authorization"]
+    },
+    "query": {
+      "type": "object",
+      "properties": {
+        "currency": {
+          "type": "string",
+          "description": "ISO 4217 currency code. Only agents that support this currency are returned.",
+          "example": "USD"
+        },
+        "country": {
+          "type": "string",
+          "description": "ISO 3166-1 alpha-2 country code in lowercase (e.g. `id`). When supplied, only agents whose `countries` list includes this value are returned.",
+          "example": "id"
+        },
+        "page": {
+          "type": "integer",
+          "description": "Page number for pagination. Defaults to 1.",
+          "default": 1
+        },
+        "per_page": {
+          "type": "integer",
+          "description": "Number of results per page. Defaults to 25.",
+          "default": 25
+        }
+      },
+      "required": ["currency"]
+    }
+  },
+  "required": ["headers", "query"]
+}

@@ -1,0 +1,95 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "List Payment Agents Response",
+  "description": "Paginated list of payment agents matching the supplied filters. Commission fields reflect the rates for the currency used in the query.",
+  "type": "object",
+  "properties": {
+    "data": {
+      "type": "array",
+      "description": "Payment agent list items sorted by agent ID ascending.",
+      "items": {
+        "type": "object",
+        "description": "Payment agent summary as returned by the list endpoint.",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "description": "Unique identifier of the payment agent. Pass this as `agent_id` to the withdraw endpoint.",
+            "example": 42
+          },
+          "created_at": {
+            "type": "integer",
+            "description": "Epoch timestamp (milliseconds) when the agent was registered.",
+            "example": 1717000000000
+          },
+          "is_listed": {
+            "type": ["boolean", "null"],
+            "description": "Whether the agent appears in the public agent directory. `false` indicates this agent was included because you've previously received a transfer from them, not because they're publicly listed."
+          },
+          "name": {
+            "type": ["string", "null"],
+            "description": "Display name of the payment agent.",
+            "example": "Agent One"
+          },
+          "information": {
+            "type": ["string", "null"],
+            "description": "Free-text description of the agent's services and operating details."
+          },
+          "email": {
+            "type": ["string", "null"],
+            "description": "Contact email address of the payment agent."
+          },
+          "phone_numbers": {
+            "type": ["array", "null"],
+            "items": { "type": "string" },
+            "description": "Contact phone numbers."
+          },
+          "payment_methods": {
+            "type": ["array", "null"],
+            "items": { "type": "string" },
+            "description": "Payment methods accepted by this agent (e.g. `bank_transfer`, `mobile_money`)."
+          },
+          "countries": {
+            "type": ["array", "null"],
+            "items": { "type": "string" },
+            "description": "ISO 3166-1 alpha-2 country codes in lowercase in which this agent operates."
+          },
+          "deposit_commission": {
+            "type": ["number", "null"],
+            "description": "Commission rate for deposits in the queried currency."
+          },
+          "withdrawal_commission": {
+            "type": ["number", "null"],
+            "description": "Commission rate for withdrawals in the queried currency."
+          },
+          "withdrawal_minimum": {
+            "type": ["string", "null"],
+            "description": "Minimum withdrawal amount as a decimal string for the queried currency."
+          },
+          "withdrawal_maximum": {
+            "type": ["string", "null"],
+            "description": "Maximum withdrawal amount as a decimal string for the queried currency."
+          }
+        },
+        "required": ["id"]
+      }
+    },
+    "metadata": {
+      "type": "object",
+      "description": "Request metadata included in every response.",
+      "properties": {
+        "endpoint": { "type": "string", "description": "The request URI." },
+        "method": {
+          "type": "string",
+          "enum": ["GET", "POST", "PUT", "DELETE", "PATCH"],
+          "description": "The HTTP method used for the request."
+        },
+        "timing": {
+          "type": "number",
+          "description": "Time in seconds for the service to process the request."
+        }
+      },
+      "required": ["endpoint", "method", "timing"]
+    }
+  },
+  "required": ["data", "metadata"]
+}

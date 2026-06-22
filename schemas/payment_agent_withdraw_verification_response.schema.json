@@ -1,0 +1,47 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Withdrawal Verification Code Response",
+  "description": "Confirmation that a one-time verification code has been dispatched to the client's registered contact.",
+  "type": "object",
+  "properties": {
+    "data": {
+      "type": "object",
+      "properties": {
+        "message": {
+          "type": "string",
+          "description": "Confirmation message indicating where to look for the code.",
+          "example": "Please check your email or phone for the verification code."
+        },
+        "next_request_at": {
+          "type": "integer",
+          "description": "Epoch timestamp (seconds) before which a new verification code cannot be requested.",
+          "example": 1781548267
+        },
+        "expires_at": {
+          "type": "integer",
+          "description": "Epoch timestamp (seconds) after which the verification code is no longer valid.",
+          "example": 1781548567
+        }
+      },
+      "required": ["message", "next_request_at", "expires_at"]
+    },
+    "metadata": {
+      "type": "object",
+      "description": "Request metadata included in every response.",
+      "properties": {
+        "endpoint": { "type": "string", "description": "The request URI." },
+        "method": {
+          "type": "string",
+          "enum": ["GET", "POST", "PUT", "DELETE", "PATCH"],
+          "description": "The HTTP method used for the request."
+        },
+        "timing": {
+          "type": "number",
+          "description": "Time in seconds for the service to process the request."
+        }
+      },
+      "required": ["endpoint", "method", "timing"]
+    }
+  },
+  "required": ["data", "metadata"]
+}

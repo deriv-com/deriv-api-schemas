@@ -1,0 +1,24 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Agent Statistics Request",
+  "description": "Request for the aggregate countries and currencies covered by active payment agents",
+  "type": "object",
+  "properties": {
+    "headers": {
+      "type": "object",
+      "properties": {
+        "Deriv-App-ID": {
+          "type": "string",
+          "description": "Application identifier"
+        },
+        "Authorization": {
+          "type": "string",
+          "description": "Bearer token for authentication",
+          "example": "Bearer YOUR_AUTH_TOKEN"
+        }
+      },
+      "required": ["Deriv-App-ID", "Authorization"]
+    }
+  },
+  "required": ["headers"]
+}
