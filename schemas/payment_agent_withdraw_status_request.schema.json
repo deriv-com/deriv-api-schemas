@@ -1,0 +1,35 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Withdrawal Status Request",
+  "description": "Request the current status of a withdrawal previously submitted with a request_id",
+  "type": "object",
+  "properties": {
+    "headers": {
+      "type": "object",
+      "properties": {
+        "Deriv-App-ID": {
+          "type": "string",
+          "description": "Application identifier"
+        },
+        "Authorization": {
+          "type": "string",
+          "description": "Bearer token for authentication",
+          "example": "Bearer YOUR_AUTH_TOKEN"
+        }
+      },
+      "required": ["Deriv-App-ID", "Authorization"]
+    },
+    "path": {
+      "type": "object",
+      "properties": {
+        "request_id": {
+          "type": "string",
+          "description": "The `request_id` previously passed to the withdraw endpoint (1-128 characters: letters, digits, underscore, hyphen). A value that doesn't match any of your withdrawals returns `RequestIDNotFound`.",
+          "example": "7842b85d-6979-4f9f-a0c7-cf2e8d122739"
+        }
+      },
+      "required": ["request_id"]
+    }
+  },
+  "required": ["headers", "path"]
+}

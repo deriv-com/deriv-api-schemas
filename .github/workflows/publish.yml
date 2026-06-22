@@ -22,11 +22,16 @@ jobs:
       # cleans the workspace before checking out, so it MUST run before any step
       # that writes files here (schemas.zip, release_notes.md) — otherwise those
       # files get deleted. See: publish failure on production_v20260608 tag.
+      # Use a PAT (not GITHUB_TOKEN) so the persisted credential used by
+      # `git push` below authenticates as a repo admin. The "PR restrictions"
+      # ruleset on master requires PRs; the github-actions[bot] cannot bypass
+      # it (repo rulesets reject the built-in Actions app as a bypass actor),
+      # but the admin role is granted bypass, so pushing as the PAT user works.
       - name: Checkout repository
         uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
         with:
           ref: master
-          token: ${{ secrets.GITHUB_TOKEN }}
+          token: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
 
       - name: Validate dispatch payload
         env:

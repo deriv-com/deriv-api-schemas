@@ -1,0 +1,57 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Withdrawal Verification Code Request",
+  "description": "Request a one-time verification code to be sent to the client's registered contact before submitting a withdrawal",
+  "type": "object",
+  "properties": {
+    "headers": {
+      "type": "object",
+      "properties": {
+        "Deriv-App-ID": {
+          "type": "string",
+          "description": "Application identifier"
+        },
+        "Authorization": {
+          "type": "string",
+          "description": "Bearer token for authentication",
+          "example": "Bearer YOUR_AUTH_TOKEN"
+        },
+        "Content-Type": {
+          "type": "string",
+          "enum": ["application/json"],
+          "description": "Content type"
+        }
+      },
+      "required": ["Deriv-App-ID", "Authorization", "Content-Type"]
+    },
+    "body": {
+      "type": "object",
+      "properties": {
+        "data": {
+          "type": "object",
+          "description": "Verification code request parameters. Must match the intended withdrawal.",
+          "properties": {
+            "agent_id": {
+              "type": "integer",
+              "description": "Unique identifier of the payment agent to withdraw through.",
+              "example": 42
+            },
+            "amount": {
+              "type": "string",
+              "description": "Intended withdrawal amount as a decimal string.",
+              "example": "50.00"
+            },
+            "currency": {
+              "type": "string",
+              "description": "ISO 4217 currency code for the intended withdrawal.",
+              "example": "USD"
+            }
+          },
+          "required": ["agent_id", "amount", "currency"]
+        }
+      },
+      "required": ["data"]
+    }
+  },
+  "required": ["headers", "body"]
+}

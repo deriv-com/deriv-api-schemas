@@ -40,31 +40,6 @@
             "enum": ["demo", "real"],
             "description": "Account type",
             "example": "demo"
-          },
-          "created_at": {
-            "type": "string",
-            "description": "Creation date"
-          },
-          "email": {
-            "type": "string",
-            "description": "User email address"
-          },
-          "last_access_at": {
-            "type": "string",
-            "description": "Last access date"
-          },
-          "name": {
-            "type": "string",
-            "description": "Client name"
-          },
-          "server_id": {
-            "type": "string",
-            "description": "Server ID"
-          },
-          "rights": {
-            "type": "object",
-            "properties": {},
-            "description": "User's rights"
           }
         },
         "required": [

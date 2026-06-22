@@ -1,0 +1,43 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Withdrawal Status Response",
+  "description": "Current status of the requested withdrawal.",
+  "type": "object",
+  "properties": {
+    "data": {
+      "type": "object",
+      "properties": {
+        "status": {
+          "type": "string",
+          "enum": ["pending", "complete", "rejected", "failed"],
+          "description": "Current status of the withdrawal. Poll until it reaches `complete`, `rejected`, or `failed`.",
+          "example": "complete"
+        },
+        "transaction_id": {
+          "type": ["integer", "null"],
+          "description": "Identifier of the transaction. May be null in some cases regardless of `status`.",
+          "example": 123
+        }
+      },
+      "required": ["status", "transaction_id"]
+    },
+    "metadata": {
+      "type": "object",
+      "description": "Request metadata included in every response.",
+      "properties": {
+        "endpoint": { "type": "string", "description": "The request URI." },
+        "method": {
+          "type": "string",
+          "enum": ["GET", "POST", "PUT", "DELETE", "PATCH"],
+          "description": "The HTTP method used for the request."
+        },
+        "timing": {
+          "type": "number",
+          "description": "Time in seconds for the service to process the request."
+        }
+      },
+      "required": ["endpoint", "method", "timing"]
+    }
+  },
+  "required": ["data", "metadata"]
+}

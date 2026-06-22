@@ -21,6 +21,10 @@
     {
       "name": "System",
       "description": "Operational endpoints for service health and infrastructure checks."
+    },
+    {
+      "name": "Payment Agent",
+      "description": "Endpoints for discovering payment agent profiles and executing payment-agent-facilitated deposits and withdrawals."
     }
   ],
   "paths": {
@@ -472,6 +476,294 @@
           },
           "500": {
             "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/trading/v1/options/contracts/bulk-purchase/real": {
+      "post": {
+        "tags": [
+          "Options Trading"
+        ],
+        "summary": "Buy a contract across multiple real accounts",
+        "description": "Buys the same options contract for multiple real-money accounts in a single call. Each entry in the request pairs an end-user Personal Access Token (PAT) with the real account to buy for, and the same contract parameters are applied to every account. Up to 100 entries are accepted per request. An entry whose token is invalid, or whose token does not own the paired account, is reported individually in the response without affecting the others; if no entry is valid the request is rejected with 400. This endpoint is for real-money accounts only — demo accounts are reported as per-account failures.",
+        "operationId": "a1c2e3f4-5b6d-4e8a-9c1f-2d3b4a5c6e7f",
+        "security": [
+          {
+            "oauth2": [
+              "trade"
+            ]
+          }
+        ],
+        "parameters": [
+          {
+            "name": "Deriv-App-ID",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Application identifier used for Personal Access Token (PAT) authentication."
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "contract_parameters": {
+                    "type": "object",
+                    "description": "Options contract parameters applied to every account in the request (e.g. contract_type, symbol, amount, duration).",
+                    "additionalProperties": true
+                  },
+                  "accounts": {
+                    "type": "array",
+                    "description": "List of end-user token / account pairs to buy the contract for. Duplicate pairs are honoured and result in repeated purchases.",
+                    "minItems": 1,
+                    "maxItems": 100,
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "token": {
+                          "type": "string",
+                          "description": "End-user Personal Access Token (PAT) authorizing the purchase on the paired account.",
+                          "minLength": 1,
+                          "maxLength": 512
+                        },
+                        "account_id": {
+                          "type": "string",
+                          "description": "Options trading account the contract should be bought for. Must belong to the token's owner.",
+                          "minLength": 1,
+                          "maxLength": 64
+                        }
+                      },
+                      "required": [
+                        "token",
+                        "account_id"
+                      ],
+                      "additionalProperties": false
+                    }
+                  }
+                },
+                "required": [
+                  "contract_parameters",
+                  "accounts"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The request was processed. The transactions array contains one entry per account with either the purchased contract details or a per-account error.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "transactions": {
+                          "type": "array",
+                          "description": "Per-account purchase results. Each entry reports success (contract/transaction details) or an error for that account.",
+                          "items": {
+                            "type": "object",
+                            "additionalProperties": true
+                          }
+                        }
+                      },
+                      "required": [
+                        "transactions"
+                      ]
+                    },
+                    "meta": {
+                      "$ref": "#/components/schemas/Metadata"
+                    }
+                  },
+                  "required": [
+                    "data",
+                    "meta"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request body, or no token/account pair passed validation (each failing account is reported in errors[].field).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "502": {
+            "description": "An upstream service was temporarily unavailable. Retry the request.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/trading/v1/options/contracts/bulk-purchase/demo": {
+      "post": {
+        "tags": [
+          "Options Trading"
+        ],
+        "summary": "Buy a contract across multiple demo accounts",
+        "description": "Buys the same options contract for multiple demo accounts in a single call. Each entry in the request pairs an end-user Personal Access Token (PAT) with the demo account to buy for, and the same contract parameters are applied to every account. Up to 100 entries are accepted per request. An entry whose token is invalid, or whose token does not own the paired account, is reported individually in the response without affecting the others; if no entry is valid the request is rejected with 400. This endpoint is for demo accounts only — real-money accounts are reported as per-account failures.",
+        "operationId": "b2d3f4a5-6c7e-4f9b-8a2d-3e4c5b6a7d8e",
+        "security": [
+          {
+            "oauth2": [
+              "trade"
+            ]
+          }
+        ],
+        "parameters": [
+          {
+            "name": "Deriv-App-ID",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Application identifier used for Personal Access Token (PAT) authentication."
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "contract_parameters": {
+                    "type": "object",
+                    "description": "Options contract parameters applied to every account in the request (e.g. contract_type, symbol, amount, duration).",
+                    "additionalProperties": true
+                  },
+                  "accounts": {
+                    "type": "array",
+                    "description": "List of end-user token / account pairs to buy the contract for. Duplicate pairs are honoured and result in repeated purchases.",
+                    "minItems": 1,
+                    "maxItems": 100,
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "token": {
+                          "type": "string",
+                          "description": "End-user Personal Access Token (PAT) authorizing the purchase on the paired account.",
+                          "minLength": 1,
+                          "maxLength": 512
+                        },
+                        "account_id": {
+                          "type": "string",
+                          "description": "Options trading account the contract should be bought for. Must belong to the token's owner.",
+                          "minLength": 1,
+                          "maxLength": 64
+                        }
+                      },
+                      "required": [
+                        "token",
+                        "account_id"
+                      ],
+                      "additionalProperties": false
+                    }
+                  }
+                },
+                "required": [
+                  "contract_parameters",
+                  "accounts"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The request was processed. The transactions array contains one entry per account with either the purchased contract details or a per-account error.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "transactions": {
+                          "type": "array",
+                          "description": "Per-account purchase results. Each entry reports success (contract/transaction details) or an error for that account.",
+                          "items": {
+                            "type": "object",
+                            "additionalProperties": true
+                          }
+                        }
+                      },
+                      "required": [
+                        "transactions"
+                      ]
+                    },
+                    "meta": {
+                      "$ref": "#/components/schemas/Metadata"
+                    }
+                  },
+                  "required": [
+                    "data",
+                    "meta"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request body, or no token/account pair passed validation (each failing account is reported in errors[].field).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "502": {
+            "description": "An upstream service was temporarily unavailable. Retry the request.",
             "content": {
               "application/json": {
                 "schema": {
@@ -1129,6 +1421,1169 @@
           }
         }
       }
+    },
+    "/payment-agents/v1/agents": {
+      "get": {
+        "tags": [
+          "Payment Agent"
+        ],
+        "summary": "List available payment agents",
+        "description": "Returns a paginated list of active payment agents that support the requested `currency`. Results include publicly listed agents, plus any agent you've previously received a transfer from even if that agent isn't publicly listed. An optional `country` filter further restricts to agents that serve that country. Each result includes the agent's profile and its commission rates for the requested currency.",
+        "operationId": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+        "security": [
+          {
+            "oauth2": [
+              "payment"
+            ]
+          }
+        ],
+        "parameters": [
+          {
+            "name": "currency",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "examples": [
+                "USD"
+              ]
+            },
+            "description": "ISO 4217 currency code. Only agents that support this currency are returned."
+          },
+          {
+            "name": "country",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "examples": [
+                "id"
+              ]
+            },
+            "description": "ISO 3166-1 alpha-2 country code in lowercase (e.g. `id`). When supplied, only agents whose `countries` list includes this value are returned."
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "default": 1
+            },
+            "description": "Page number for pagination. Defaults to 1."
+          },
+          {
+            "name": "per_page",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "default": 25
+            },
+            "description": "Number of results per page. Defaults to 25."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK — paginated list of payment agents matching the supplied filters.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "array",
+                      "description": "Payment agent list items sorted by agent ID ascending.",
+                      "items": {
+                        "$ref": "#/components/schemas/PaymentAgentListItem"
+                      }
+                    },
+                    "errors": {
+                      "type": "array",
+                      "items": {},
+                      "description": "Empty on success."
+                    },
+                    "metadata": {
+                      "$ref": "#/components/schemas/PAMetadata"
+                    }
+                  },
+                  "required": [
+                    "data",
+                    "errors",
+                    "metadata"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request — missing or invalid query parameters (e.g. `currency` not supplied). `errors[0].code` will be `InputError`.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PAErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized — missing or invalid Bearer token.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PAErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden — valid token but insufficient scope (`payment` scope required).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PAErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error — `errors[0].code` will be `InternalError`.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PAErrorResponse"
+                }
+              }
+            }
+          },
+          "504": {
+            "description": "Gateway timeout — the service did not respond in time.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PAErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/payment-agents/v1/agents/{id}": {
+      "get": {
+        "tags": [
+          "Payment Agent"
+        ],
+        "summary": "Get a payment agent by ID",
+        "description": "Returns the full profile of a single payment agent, including agents not publicly listed in the directory. Use this when you already have an agent's `id` and need their full details. The response always includes a `currencies` array with the agent's commission rates and withdrawal limits for each supported currency, and a `urls` array with the agent's associated websites. Pass `me` as the `id` to return the authenticated client's own agent profile.",
+        "operationId": "b2c3d4e5-f6a7-8901-bcde-f12345678901",
+        "security": [
+          {
+            "oauth2": [
+              "payment"
+            ]
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Numeric ID of the payment agent (as returned by `GET /payment-agents/v1/agents`) or the literal string `\"me\"` to return the authenticated client's own agent profile. Any other non-numeric value returns `InvalidAgentID`."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK — full payment agent profile.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/PaymentAgentDetail"
+                    },
+                    "errors": {
+                      "type": "array",
+                      "items": {},
+                      "description": "Empty on success."
+                    },
+                    "metadata": {
+                      "$ref": "#/components/schemas/PAMetadata"
+                    }
+                  },
+                  "required": [
+                    "data",
+                    "errors",
+                    "metadata"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request — `errors[0].code` will be one of:\n\n- `InvalidAgentID` — the `id` path parameter is not a valid numeric ID or `me`",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PAErrorResponse"
+                },
+                "examples": {
+                  "InvalidAgentID": {
+                    "value": {
+                      "data": {},
+                      "errors": [
+                        {
+                          "status": 400,
+                          "code": "InvalidAgentID"
+                        }
+                      ],
+                      "metadata": {
+                        "endpoint": "/payment-agents/v1/agents/abc",
+                        "method": "GET",
+                        "timing": 0.005
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized — missing or invalid Bearer token.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PAErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden — valid token but insufficient scope.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PAErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found — `AgentNotFound`: no payment agent exists with the given `id`.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PAErrorResponse"
+                },
+                "examples": {
+                  "AgentNotFound": {
+                    "value": {
+                      "data": {},
+                      "errors": [
+                        {
+                          "status": 404,
+                          "code": "AgentNotFound"
+                        }
+                      ],
+                      "metadata": {
+                        "endpoint": "/payment-agents/v1/agents/999999",
+                        "method": "GET",
+                        "timing": 0.012
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error — `errors[0].code` will be `InternalError`.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PAErrorResponse"
+                }
+              }
+            }
+          },
+          "504": {
+            "description": "Gateway timeout.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PAErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/payment-agents/v1/agent-statistics": {
+      "get": {
+        "tags": [
+          "Payment Agent"
+        ],
+        "summary": "Get payment agent statistics",
+        "description": "Returns the aggregate set of countries and currencies covered by at least one active, publicly listed payment agent. Use this to determine which `currency` and `country` filter values are meaningful before calling the agent list — results may lag newly onboarded agents by a short period.",
+        "operationId": "c3d4e5f6-a7b8-9012-cdef-012345678902",
+        "security": [
+          {
+            "oauth2": [
+              "payment"
+            ]
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK — aggregated statistics.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/AgentStatistics"
+                    },
+                    "errors": {
+                      "type": "array",
+                      "items": {},
+                      "description": "Empty on success."
+                    },
+                    "metadata": {
+                      "$ref": "#/components/schemas/PAMetadata"
+                    }
+                  },
+                  "required": [
+                    "data",
+                    "errors",
+                    "metadata"
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized — missing or invalid Bearer token.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PAErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden — valid token but insufficient scope.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PAErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PAErrorResponse"
+                }
+              }
+            }
+          },
+          "504": {
+            "description": "Gateway timeout.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PAErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/payment-agents/v1/transfer": {
+      "post": {
+        "tags": [
+          "Payment Agent"
+        ],
+        "summary": "Transfer funds to a client (payment agent deposit)",
+        "description": "Lets an authenticated payment agent deposit funds directly into a client's Deriv wallet, identified by their account nickname (`to_nickname`). On success, returns a transaction status with `status: \"complete\"` and a `transaction_id`.\n\nBusiness rules enforced (each maps to a specific error code if not met):\n\n- Caller must be a registered, active payment agent (`AgentIDInvalid`, `AgentInactive`).\n- Agent must support the requested `currency` (`AgentCurrencyUnsupported`).\n- The recipient must not be the calling payment agent's own Deriv account (`AgentSelfTransfer`).\n- `to_nickname` must match exactly one existing Deriv account (`NicknameNotFound`).\n- Recipient account must be able to receive the funds (`NoClientWallet`).\n- Recipient's country of residence must be served by the agent (`ClientCountryUnsupported`).\n- Agent's wallet must hold enough funds to cover the transfer (`WalletFundsInsufficient`).",
+        "operationId": "d4e5f6a7-b8c9-0123-def0-123456789003",
+        "security": [
+          {
+            "oauth2": [
+              "payment"
+            ]
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "data": {
+                    "type": "object",
+                    "description": "Transfer parameters.",
+                    "properties": {
+                      "to_nickname": {
+                        "type": "string",
+                        "description": "Deriv account nickname of the client to receive the funds.",
+                        "examples": [
+                          "client_nickname"
+                        ]
+                      },
+                      "amount": {
+                        "type": "string",
+                        "description": "Amount to transfer expressed as a decimal string.",
+                        "examples": [
+                          "100.00"
+                        ]
+                      },
+                      "currency": {
+                        "type": "string",
+                        "description": "ISO 4217 currency code for the transfer. Must be supported by the authenticated payment agent.",
+                        "examples": [
+                          "USD"
+                        ]
+                      },
+                      "notes": {
+                        "type": "string",
+                        "description": "Optional free-text notes for this transaction.",
+                        "examples": [
+                          "Payment for services"
+                        ]
+                      },
+                      "request_id": {
+                        "type": "string",
+                        "pattern": "^[\\w\\-]{1,128}$",
+                        "description": "Optional idempotency key, 1-128 characters (letters, digits, underscore, hyphen). Reusing a previous `request_id` returns `RequestIDUsed` instead of creating a duplicate transfer. Unlike withdrawals, a transfer's `request_id` cannot be used to look up status afterwards — transfers complete synchronously in this same response.",
+                        "examples": [
+                          "a1b2c3d4-e5f6-7890-abcd-ef1234567890"
+                        ]
+                      }
+                    },
+                    "required": [
+                      "to_nickname",
+                      "amount",
+                      "currency"
+                    ]
+                  }
+                },
+                "required": [
+                  "data"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK — the transfer was completed. `data.status` will be `\"complete\"` and `data.transaction_id` identifies the resulting transaction.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/TransactionStatus"
+                    },
+                    "errors": {
+                      "type": "array",
+                      "items": {},
+                      "description": "Empty on success."
+                    },
+                    "metadata": {
+                      "$ref": "#/components/schemas/PAMetadata"
+                    }
+                  },
+                  "required": [
+                    "data",
+                    "errors",
+                    "metadata"
+                  ],
+                  "examples": [
+                    {
+                      "data": {
+                        "status": "complete",
+                        "transaction_id": 123
+                      },
+                      "errors": [],
+                      "metadata": {
+                        "endpoint": "/payment-agents/v1/transfer",
+                        "method": "POST",
+                        "timing": 0.21
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request — `errors[0].code` will be one of:\n\n- `AgentIDInvalid` — the authenticated client is not a registered payment agent\n- `AgentInactive` — the authenticated payment agent account is currently inactive\n- `AgentSelfTransfer` — the `to_nickname` provided belongs to the calling payment agent. An agent cannot transfer funds to their own account\n- `AgentCurrencyUnsupported` — the agent does not support the requested `currency`\n- `NicknameNotFound` — `to_nickname` does not match any Deriv account\n- `NoClientWallet` — the recipient account cannot receive the funds\n- `ClientCountryUnsupported` — the recipient's country of residence is not covered by this agent\n- `WalletFundsInsufficient` — the agent's wallet does not hold enough funds for this transfer\n- `InvalidRequestIDFormat` — `request_id` does not match the required format (1-128 characters: letters, digits, underscore, hyphen)\n- `RequestIDUsed` — the `request_id` has already been used. It must be unique per transfer",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PAErrorResponse"
+                },
+                "examples": {
+                  "AgentCurrencyUnsupported": {
+                    "value": {
+                      "data": {},
+                      "errors": [
+                        {
+                          "status": 400,
+                          "code": "AgentCurrencyUnsupported"
+                        }
+                      ],
+                      "metadata": {
+                        "endpoint": "/payment-agents/v1/transfer",
+                        "method": "POST",
+                        "timing": 0.032
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized — missing or invalid Bearer token.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PAErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden — valid token but insufficient scope (`payment` scope required).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PAErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error — `errors[0].code` will be one of:\n\n- `NicknameLookupFailed` — the recipient account could not be resolved from `to_nickname`\n- `WalletLookupFailed` — the recipient's wallet details could not be retrieved\n- `TransferFailed` — the transfer could not be completed\n- `InternalError` — an unexpected error occurred\n\nThese errors are transient. Retrying the request is reasonable.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PAErrorResponse"
+                },
+                "examples": {
+                  "InternalError": {
+                    "value": {
+                      "data": {},
+                      "errors": [
+                        {
+                          "status": 500,
+                          "code": "InternalError"
+                        }
+                      ],
+                      "metadata": {
+                        "endpoint": "/payment-agents/v1/transfer",
+                        "method": "POST",
+                        "timing": 0.120
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "504": {
+            "description": "Gateway timeout.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PAErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/payment-agents/v1/withdraw/verification_code": {
+      "post": {
+        "tags": [
+          "Payment Agent"
+        ],
+        "summary": "Request a withdrawal verification code",
+        "description": "Requests a one-time verification code be sent to the client's registered contact (email or phone). Call this before submitting a withdrawal via `POST /payment-agents/v1/withdraw` — the code must be included as `verification_code` in that request. The code is valid until `expires_at` (epoch seconds). A new code cannot be requested before `next_request_at` (epoch seconds).\n\nThe same agent eligibility rules checked by the withdrawal endpoint are enforced here (`AgentIDInvalid`, `AgentInactive`, `AgentSelfWithdraw`, `AgentCurrencyUnsupported`), so if this request succeeds, the subsequent withdrawal will not fail those checks.",
+        "operationId": "f6a7b8c9-d0e1-2345-f012-345678901005",
+        "security": [
+          {
+            "oauth2": [
+              "payment"
+            ]
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "data": {
+                    "type": "object",
+                    "description": "Verification code request parameters. Must match the intended withdrawal.",
+                    "properties": {
+                      "agent_id": {
+                        "type": "integer",
+                        "description": "Unique identifier of the payment agent to withdraw through.",
+                        "examples": [
+                          42
+                        ]
+                      },
+                      "amount": {
+                        "type": "string",
+                        "description": "Intended withdrawal amount as a decimal string.",
+                        "examples": [
+                          "50.00"
+                        ]
+                      },
+                      "currency": {
+                        "type": "string",
+                        "description": "ISO 4217 currency code for the intended withdrawal.",
+                        "examples": [
+                          "USD"
+                        ]
+                      }
+                    },
+                    "required": [
+                      "agent_id",
+                      "amount",
+                      "currency"
+                    ]
+                  }
+                },
+                "required": [
+                  "data"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK — the verification code has been sent to the client's registered contact.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/VerificationCodeResponse"
+                    },
+                    "errors": {
+                      "type": "array",
+                      "items": {},
+                      "description": "Empty on success."
+                    },
+                    "metadata": {
+                      "$ref": "#/components/schemas/PAMetadata"
+                    }
+                  },
+                  "required": [
+                    "data",
+                    "errors",
+                    "metadata"
+                  ],
+                  "examples": [
+                    {
+                      "data": {
+                        "message": "Please check your email or phone for the verification code.",
+                        "next_request_at": 1781548267,
+                        "expires_at": 1781548567
+                      },
+                      "errors": [],
+                      "metadata": {
+                        "endpoint": "/payment-agents/v1/withdraw/verification_code",
+                        "method": "POST",
+                        "timing": 1.049
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request — `errors[0].code` will be one of:\n\n- `AgentIDInvalid` — no payment agent exists with the given `agent_id`\n- `AgentInactive` — the target payment agent is not currently active\n- `AgentSelfWithdraw` — the authenticated client is the registered owner of the selected payment agent. A client cannot withdraw through a payment agent account they own\n- `AgentCurrencyUnsupported` — the agent does not support the requested `currency`\n- `OtpRateLimitExceeded` — too many verification code requests in a short period. `errors[0].detail.next_request_at` indicates when a new request can be made",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PAErrorResponse"
+                },
+                "examples": {
+                  "OtpRateLimitExceeded": {
+                    "value": {
+                      "data": {},
+                      "errors": [
+                        {
+                          "status": 400,
+                          "code": "OtpRateLimitExceeded",
+                          "detail": {
+                            "message": "Too many OTP requests. Please try again later.",
+                            "next_request_at": 1781547816
+                          }
+                        }
+                      ],
+                      "metadata": {
+                        "endpoint": "/payment-agents/v1/withdraw/verification_code",
+                        "method": "POST",
+                        "timing": 0.801
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized — missing or invalid Bearer token.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PAErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden — valid token but insufficient scope.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PAErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error — `errors[0].code` will be one of:\n\n- `VerificationCodeRequestFailed` — the verification code could not be dispatched\n- `InternalError` — an unexpected error occurred",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PAErrorResponse"
+                }
+              }
+            }
+          },
+          "504": {
+            "description": "Gateway timeout.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PAErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/payment-agents/v1/withdraw": {
+      "post": {
+        "tags": [
+          "Payment Agent"
+        ],
+        "summary": "Withdraw funds via a payment agent",
+        "description": "Lets an authenticated client withdraw funds from their Deriv wallet via a payment agent. The agent is identified by `agent_id`. The withdrawal moves the requested amount out of the client's wallet and into the agent's wallet. The agent then settles the equivalent value with the client outside of Deriv.\n\nBefore calling this endpoint, request a one-time verification code via `POST /payment-agents/v1/withdraw/verification_code` and supply it as `verification_code`. The code must be 6 digits and within its validity window.\n\nBusiness rules enforced (each maps to a specific error code if not met):\n\n- A payment agent with the given `agent_id` must exist and be active (`AgentIDInvalid`, `AgentInactive`).\n- The authenticated client must not be the owner of the selected payment agent (`AgentSelfWithdraw`).\n- The agent must support the requested `currency` (`AgentCurrencyUnsupported`).\n- The client's account must hold a wallet to withdraw from (`NoClientWallet`).\n- The client's country of residence must be one the agent serves (`ClientCountryUnsupported`).\n- `amount` must satisfy the agent's withdrawal limits for the currency, if configured (`WithdrawalAmountMinimum`, `WithdrawalAmountMaximum`).\n- The client's wallet must hold sufficient funds (`WalletFundsInsufficient`).\n- `verification_code` must be the correct 6-digit code received from `POST /payment-agents/v1/withdraw/verification_code` (`InvalidOTP`, `OtpValidationRateLimitExceeded`).",
+        "operationId": "e5f6a7b8-c9d0-1234-ef01-234567890004",
+        "security": [
+          {
+            "oauth2": [
+              "payment"
+            ]
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "data": {
+                    "type": "object",
+                    "description": "Withdrawal parameters.",
+                    "properties": {
+                      "agent_id": {
+                        "type": "integer",
+                        "description": "Unique identifier of the payment agent to withdraw through, as returned by `GET /payment-agents/v1/agents`.",
+                        "examples": [
+                          42
+                        ]
+                      },
+                      "amount": {
+                        "type": "string",
+                        "description": "Amount to withdraw as a decimal string. Must satisfy the agent's `withdrawal_minimum` and `withdrawal_maximum` limits for the currency.",
+                        "examples": [
+                          "50.00"
+                        ]
+                      },
+                      "currency": {
+                        "type": "string",
+                        "description": "ISO 4217 currency code for the withdrawal. Must be supported by the target payment agent.",
+                        "examples": [
+                          "USD"
+                        ]
+                      },
+                      "verification_code": {
+                        "type": "string",
+                        "pattern": "^[0-9]{6}$",
+                        "description": "6-digit one-time verification code obtained from `POST /payment-agents/v1/withdraw/verification_code`.",
+                        "examples": [
+                          "123456"
+                        ]
+                      },
+                      "request_id": {
+                        "type": "string",
+                        "pattern": "^[\\w\\-]{1,128}$",
+                        "description": "Optional, 1-128 characters (letters, digits, underscore, hyphen). If provided, the withdrawal status can be retrieved via `GET /payment-agents/v1/withdraw/{request_id}`. Without it, status tracking is unavailable for this withdrawal. Must be unique — reusing a previous `request_id` returns `RequestIDUsed`.",
+                        "examples": [
+                          "7842b85d-6979-4f9f-a0c7-cf2e8d122739"
+                        ]
+                      },
+                      "notes": {
+                        "type": "string",
+                        "description": "Optional free-text notes for this transaction.",
+                        "examples": [
+                          "Withdrawal request"
+                        ]
+                      }
+                    },
+                    "required": [
+                      "agent_id",
+                      "amount",
+                      "currency",
+                      "verification_code"
+                    ]
+                  }
+                },
+                "required": [
+                  "data"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK — the withdrawal was accepted. `data.status` is `\"pending\"` while the transaction processes. `data.transaction_id` identifies the transaction. Use `GET /payment-agents/v1/withdraw/{request_id}` to poll for the final status if you provided a `request_id`.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/TransactionStatus"
+                    },
+                    "errors": {
+                      "type": "array",
+                      "items": {},
+                      "description": "Empty on success."
+                    },
+                    "metadata": {
+                      "$ref": "#/components/schemas/PAMetadata"
+                    }
+                  },
+                  "required": [
+                    "data",
+                    "errors",
+                    "metadata"
+                  ],
+                  "examples": [
+                    {
+                      "data": {
+                        "status": "pending",
+                        "transaction_id": 456
+                      },
+                      "errors": [],
+                      "metadata": {
+                        "endpoint": "/payment-agents/v1/withdraw",
+                        "method": "POST",
+                        "timing": 0.447
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request — `errors[0].code` will be one of:\n\n- `AgentIDInvalid` — no payment agent exists with the given `agent_id`\n- `AgentInactive` — the target payment agent is currently inactive\n- `AgentSelfWithdraw` — the authenticated client is the registered owner of the selected payment agent. A client cannot withdraw through a payment agent account they own\n- `AgentCurrencyUnsupported` — the agent does not support the requested `currency`\n- `VerificationCodeFormatInvalid` — `verification_code` is not a 6-digit numeric string\n- `NoClientWallet` — the authenticated client's account has no wallet to withdraw from\n- `ClientCountryUnsupported` — the client's country of residence is not covered by this agent\n- `WithdrawalAmountMinimum` — `amount` is below the agent's minimum withdrawal limit for this currency\n- `WithdrawalAmountMaximum` — `amount` exceeds the agent's maximum withdrawal limit for this currency\n- `WalletFundsInsufficient` — the client's wallet does not hold enough funds for this withdrawal\n- `InvalidRequestIDFormat` — `request_id` does not match the required format (1-128 characters: letters, digits, underscore, hyphen)\n- `RequestIDUsed` — the `request_id` has already been used. It must be unique per withdrawal\n- `InvalidOTP` — the `verification_code` is incorrect. `errors[0].detail.message` contains the error message\n- `OtpValidationRateLimitExceeded` — too many incorrect verification code attempts. `errors[0].detail.message` contains the error message",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PAErrorResponse"
+                },
+                "examples": {
+                  "AgentCurrencyUnsupported": {
+                    "value": {
+                      "data": {},
+                      "errors": [
+                        {
+                          "status": 400,
+                          "code": "AgentCurrencyUnsupported"
+                        }
+                      ],
+                      "metadata": {
+                        "endpoint": "/payment-agents/v1/withdraw",
+                        "method": "POST",
+                        "timing": 0.030
+                      }
+                    }
+                  },
+                  "InvalidOTP": {
+                    "value": {
+                      "data": {},
+                      "errors": [
+                        {
+                          "status": 400,
+                          "code": "InvalidOTP",
+                          "detail": {
+                            "message": "Invalid OTP"
+                          }
+                        }
+                      ],
+                      "metadata": {
+                        "endpoint": "/payment-agents/v1/withdraw",
+                        "method": "POST",
+                        "timing": 0.447
+                      }
+                    }
+                  },
+                  "OtpValidationRateLimitExceeded": {
+                    "value": {
+                      "data": {},
+                      "errors": [
+                        {
+                          "status": 400,
+                          "code": "OtpValidationRateLimitExceeded",
+                          "detail": {
+                            "message": "Too many failed OTP validation attempts. Please try after some time."
+                          }
+                        }
+                      ],
+                      "metadata": {
+                        "endpoint": "/payment-agents/v1/withdraw",
+                        "method": "POST",
+                        "timing": 0.16
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized — missing or invalid Bearer token.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PAErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden — valid token but insufficient scope (`payment` scope required).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PAErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error — `errors[0].code` will be one of:\n\n- `ClientIdentityLookupFailed` — the authenticated client's account details could not be retrieved\n- `WalletLookupFailed` — the client's wallet details could not be retrieved\n- `WithdrawalFailed` — the withdrawal could not be completed\n- `OTPValidationFailed` — verification code validation failed unexpectedly\n- `InternalError` — an unexpected error occurred\n\nThese errors are transient. Retrying the request is reasonable.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PAErrorResponse"
+                },
+                "examples": {
+                  "InternalError": {
+                    "value": {
+                      "data": {},
+                      "errors": [
+                        {
+                          "status": 500,
+                          "code": "InternalError"
+                        }
+                      ],
+                      "metadata": {
+                        "endpoint": "/payment-agents/v1/withdraw",
+                        "method": "POST",
+                        "timing": 0.150
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "504": {
+            "description": "Gateway timeout.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PAErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/payment-agents/v1/withdraw/{request_id}": {
+      "get": {
+        "tags": [
+          "Payment Agent"
+        ],
+        "summary": "Get the status of a withdrawal",
+        "description": "Returns the current status of a withdrawal previously initiated via `POST /payment-agents/v1/withdraw` with a `request_id`. Both the client who initiated the withdrawal and the payment agent can query this endpoint. The status progresses from `\"pending\"` to `\"complete\"`, `\"rejected\"`, or `\"failed\"`.",
+        "operationId": "a9b0c1d2-e3f4-5678-a9b0-c1d2e3f45678",
+        "security": [
+          {
+            "oauth2": [
+              "payment"
+            ]
+          }
+        ],
+        "parameters": [
+          {
+            "name": "request_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[\\w\\-]{1,128}$"
+            },
+            "description": "The `request_id` previously passed to `POST /payment-agents/v1/withdraw` (1-128 characters: letters, digits, underscore, hyphen). A value that doesn't match any of your withdrawals returns `RequestIDNotFound`, whether or not it matches this format."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK — current withdrawal status.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/TransactionStatus"
+                    },
+                    "errors": {
+                      "type": "array",
+                      "items": {},
+                      "description": "Empty on success."
+                    },
+                    "metadata": {
+                      "$ref": "#/components/schemas/PAMetadata"
+                    }
+                  },
+                  "required": [
+                    "data",
+                    "errors",
+                    "metadata"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request — `RequestIDNotFound`: no withdrawal with this `request_id` is accessible to the authenticated user.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PAErrorResponse"
+                },
+                "examples": {
+                  "RequestIDNotFound": {
+                    "value": {
+                      "data": {},
+                      "errors": [
+                        {
+                          "status": 400,
+                          "code": "RequestIDNotFound"
+                        }
+                      ],
+                      "metadata": {
+                        "endpoint": "/payment-agents/v1/withdraw/my-request-id",
+                        "method": "GET",
+                        "timing": 0.021
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized — missing or invalid Bearer token.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PAErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden — valid token but insufficient scope.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PAErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error — `errors[0].code` will be `InternalError`.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PAErrorResponse"
+                }
+              }
+            }
+          },
+          "504": {
+            "description": "Gateway timeout.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PAErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
@@ -1142,7 +2597,8 @@
             "scopes": {
               "trade": "Access to trading operations",
               "account_manage": "Write access for account creation and management",
-              "application_read": "Read-only access to your registered applications"
+              "application_read": "Read-only access to your registered applications",
+              "payment": "Access to payment agent deposit and withdrawal operations"
             }
           }
         }
@@ -1577,31 +3033,6 @@
             "examples": [
               "demo"
             ]
-          },
-          "created_at": {
-            "type": "string",
-            "description": "Creation date"
-          },
-          "email": {
-            "type": "string",
-            "description": "User email address"
-          },
-          "last_access_at": {
-            "type": "string",
-            "description": "Last access date"
-          },
-          "name": {
-            "type": "string",
-            "description": "Client name"
-          },
-          "server_id": {
-            "type": "string",
-            "description": "Server ID"
-          },
-          "rights": {
-            "type": "object",
-            "properties": {},
-            "description": "User's rights"
           }
         },
         "required": [
@@ -1611,6 +3042,511 @@
           "group",
           "status",
           "account_type"
+        ]
+      },
+      "PAMetadata": {
+        "type": "object",
+        "description": "Request metadata included in every response.",
+        "properties": {
+          "endpoint": {
+            "type": "string",
+            "description": "The request URI."
+          },
+          "method": {
+            "type": "string",
+            "enum": [
+              "GET",
+              "POST",
+              "PUT",
+              "DELETE",
+              "PATCH"
+            ],
+            "description": "The HTTP method used for the request."
+          },
+          "timing": {
+            "type": "number",
+            "description": "Time in seconds for the service to process the request."
+          }
+        },
+        "required": [
+          "endpoint",
+          "method",
+          "timing"
+        ]
+      },
+      "PAErrorDetail": {
+        "type": "object",
+        "description": "Additional context for specific error codes. `message` is always present. `next_request_at` is included for rate-limit errors to indicate when the operation can be retried.",
+        "properties": {
+          "message": {
+            "type": "string",
+            "description": "Human-readable description of the error condition.",
+            "examples": [
+              "Invalid OTP"
+            ]
+          },
+          "next_request_at": {
+            "type": "integer",
+            "description": "Epoch timestamp (seconds) after which the operation may be retried. Present only on rate-limit errors.",
+            "examples": [
+              1781547816
+            ]
+          }
+        },
+        "required": [
+          "message"
+        ]
+      },
+      "PAErrorItem": {
+        "type": "object",
+        "description": "A single error entry. Every entry carries an HTTP-equivalent `status` and a machine-readable `code`. Some errors include a `detail` object with additional context — see individual endpoint documentation.",
+        "properties": {
+          "status": {
+            "type": "integer",
+            "description": "HTTP-equivalent status code for this error."
+          },
+          "code": {
+            "type": "string",
+            "description": "Machine-readable error code identifying what went wrong.",
+            "enum": [
+              "AgentIDInvalid",
+              "AgentNotFound",
+              "AgentInactive",
+              "AgentSelfTransfer",
+              "AgentSelfWithdraw",
+              "AgentCurrencyUnsupported",
+              "InvalidAgentID",
+              "NicknameNotFound",
+              "NicknameLookupFailed",
+              "NoClientWallet",
+              "WalletLookupFailed",
+              "ClientCountryUnsupported",
+              "ClientIdentityLookupFailed",
+              "WithdrawalAmountMinimum",
+              "WithdrawalAmountMaximum",
+              "WalletFundsInsufficient",
+              "TransferFailed",
+              "WithdrawalFailed",
+              "VerificationCodeFormatInvalid",
+              "OtpRateLimitExceeded",
+              "InvalidOTP",
+              "OtpValidationRateLimitExceeded",
+              "OTPValidationFailed",
+              "VerificationCodeRequestFailed",
+              "RequestIDUsed",
+              "RequestIDNotFound",
+              "InvalidRequestIDFormat",
+              "InputError",
+              "InternalError"
+            ]
+          },
+          "detail": {
+            "$ref": "#/components/schemas/PAErrorDetail"
+          }
+        },
+        "required": [
+          "status",
+          "code"
+        ]
+      },
+      "PAErrorResponse": {
+        "type": "object",
+        "description": "Standard error envelope. `data` is empty. `errors` contains one entry describing what went wrong.",
+        "properties": {
+          "data": {
+            "type": "object",
+            "description": "Always an empty object on error.",
+            "examples": [
+              {}
+            ]
+          },
+          "errors": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PAErrorItem"
+            },
+            "description": "One or more error entries."
+          },
+          "metadata": {
+            "$ref": "#/components/schemas/PAMetadata"
+          }
+        },
+        "required": [
+          "data",
+          "errors",
+          "metadata"
+        ]
+      },
+      "VerificationCodeResponse": {
+        "type": "object",
+        "description": "Confirmation that a one-time verification code has been dispatched to the client's registered contact.",
+        "properties": {
+          "message": {
+            "type": "string",
+            "description": "Confirmation message indicating where to look for the code.",
+            "examples": [
+              "Please check your email or phone for the verification code."
+            ]
+          },
+          "next_request_at": {
+            "type": "integer",
+            "description": "Epoch timestamp (seconds) before which a new verification code cannot be requested.",
+            "examples": [
+              1781548267
+            ]
+          },
+          "expires_at": {
+            "type": "integer",
+            "description": "Epoch timestamp (seconds) after which the verification code is no longer valid.",
+            "examples": [
+              1781548567
+            ]
+          }
+        },
+        "required": [
+          "message",
+          "next_request_at",
+          "expires_at"
+        ]
+      },
+      "AgentCurrencyItem": {
+        "type": "object",
+        "description": "Commission rates and withdrawal limits for a single currency supported by a payment agent.",
+        "properties": {
+          "currency": {
+            "type": "string",
+            "description": "ISO 4217 currency code.",
+            "examples": [
+              "USD"
+            ]
+          },
+          "deposit_commission": {
+            "type": [
+              "number",
+              "null"
+            ],
+            "description": "Commission percentage charged by the agent on deposits. Null if no deposit commission applies.",
+            "examples": [
+              1.5
+            ]
+          },
+          "withdrawal_commission": {
+            "type": [
+              "number",
+              "null"
+            ],
+            "description": "Commission percentage charged by the agent on withdrawals. Null if no withdrawal commission applies.",
+            "examples": [
+              2.0
+            ]
+          },
+          "withdrawal_minimum": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "Minimum withdrawal amount as a decimal string. Null if no minimum is enforced.",
+            "examples": [
+              "10.00"
+            ]
+          },
+          "withdrawal_maximum": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "Maximum withdrawal amount as a decimal string. Null if no maximum is enforced.",
+            "examples": [
+              "1000.00"
+            ]
+          }
+        },
+        "required": [
+          "currency"
+        ]
+      },
+      "PaymentAgentListItem": {
+        "type": "object",
+        "description": "Payment agent summary as returned by the list endpoint. Commission fields reflect the rates for the `currency` used in the query.",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "description": "Unique identifier of the payment agent. Pass this as `agent_id` to `POST /payment-agents/v1/withdraw`.",
+            "examples": [
+              42
+            ]
+          },
+          "created_at": {
+            "type": "integer",
+            "description": "Epoch timestamp (milliseconds) when the agent was registered.",
+            "examples": [
+              1717000000000
+            ]
+          },
+          "is_listed": {
+            "type": "boolean",
+            "description": "Whether the agent appears in the public agent directory. `false` indicates this agent was included because you've previously received a transfer from them, not because they're publicly listed."
+          },
+          "name": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "Display name of the payment agent.",
+            "examples": [
+              "Agent One"
+            ]
+          },
+          "information": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "Free-text description of the agent's services and operating details."
+          },
+          "email": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "Contact email address of the payment agent."
+          },
+          "phone_numbers": {
+            "type": [
+              "array",
+              "null"
+            ],
+            "items": {
+              "type": "string"
+            },
+            "description": "Contact phone numbers."
+          },
+          "payment_methods": {
+            "type": [
+              "array",
+              "null"
+            ],
+            "items": {
+              "type": "string"
+            },
+            "description": "Payment methods accepted by this agent (e.g. `\"bank_transfer\"`, `\"mobile_money\"`)."
+          },
+          "countries": {
+            "type": [
+              "array",
+              "null"
+            ],
+            "items": {
+              "type": "string"
+            },
+            "description": "ISO 3166-1 alpha-2 country codes in lowercase in which this agent operates."
+          },
+          "deposit_commission": {
+            "type": [
+              "number",
+              "null"
+            ],
+            "description": "Commission rate for deposits in the queried currency."
+          },
+          "withdrawal_commission": {
+            "type": [
+              "number",
+              "null"
+            ],
+            "description": "Commission rate for withdrawals in the queried currency."
+          },
+          "withdrawal_minimum": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "Minimum withdrawal amount as a decimal string for the queried currency."
+          },
+          "withdrawal_maximum": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "Maximum withdrawal amount as a decimal string for the queried currency."
+          }
+        },
+        "required": [
+          "id"
+        ]
+      },
+      "PaymentAgentDetail": {
+        "type": "object",
+        "description": "Full payment agent profile returned by `GET /payment-agents/v1/agents/{id}`. Always includes a `currencies` array (one entry per supported currency with commission and limit settings) and a `urls` array. Unlike the list endpoint, this may include agents not publicly listed in the directory.",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "description": "Unique identifier of the payment agent.",
+            "examples": [
+              42
+            ]
+          },
+          "cashier_withdraw": {
+            "type": "boolean",
+            "description": "Whether the agent is allowed to withdraw from the payment agent wallet (only returned when viewing own profile)."
+          },
+          "created_at": {
+            "type": "integer",
+            "description": "Epoch timestamp (milliseconds) when the agent was registered.",
+            "examples": [
+              1717000000000
+            ]
+          },
+          "is_listed": {
+            "type": "boolean",
+            "description": "Whether the agent appears in the public agent directory."
+          },
+          "name": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "Display name of the payment agent.",
+            "examples": [
+              "Agent One"
+            ]
+          },
+          "information": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "Free-text description of the agent's services and operating details."
+          },
+          "email": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "Contact email address."
+          },
+          "phone_numbers": {
+            "type": [
+              "array",
+              "null"
+            ],
+            "items": {
+              "type": "string"
+            },
+            "description": "Contact phone numbers."
+          },
+          "payment_methods": {
+            "type": [
+              "array",
+              "null"
+            ],
+            "items": {
+              "type": "string"
+            },
+            "description": "Payment methods accepted by this agent."
+          },
+          "countries": {
+            "type": [
+              "array",
+              "null"
+            ],
+            "items": {
+              "type": "string"
+            },
+            "description": "ISO 3166-1 alpha-2 country codes in lowercase in which this agent operates."
+          },
+          "urls": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Website URLs associated with the agent."
+          },
+          "currencies": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AgentCurrencyItem"
+            },
+            "description": "Commission and limit settings for each currency the agent supports."
+          }
+        },
+        "required": [
+          "id",
+          "urls",
+          "currencies"
+        ]
+      },
+      "AgentStatistics": {
+        "type": "object",
+        "description": "Lists all countries and currencies currently covered by at least one active payment agent. Use these values to discover valid options for the `currency` and `country` parameters when listing agents. Results may not immediately reflect newly added agents.",
+        "properties": {
+          "available_countries": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "ISO 3166-1 alpha-2 country codes in lowercase covered by at least one active payment agent.",
+            "examples": [
+              [
+                "au",
+                "id",
+                "ng",
+                "pk"
+              ]
+            ]
+          },
+          "available_currencies": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Sorted, deduplicated list of ISO 4217 currency codes supported by at least one active payment agent.",
+            "examples": [
+              [
+                "EUR",
+                "IDR",
+                "NGN",
+                "USD"
+              ]
+            ]
+          }
+        },
+        "required": [
+          "available_countries",
+          "available_currencies"
+        ]
+      },
+      "TransactionStatus": {
+        "type": "object",
+        "description": "Transaction status returned by transfer, withdrawal, and withdrawal status endpoints.",
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": [
+              "requested",
+              "pending",
+              "complete",
+              "rejected",
+              "failed"
+            ],
+            "description": "Current status of the transaction. Transactions are initially `\"requested\"`. Transfers complete synchronously (`\"complete\"`). Withdrawals start as `\"pending\"` and eventually move to `\"complete\"`, `\"rejected\"`, or `\"failed\"` if it could not be processed.",
+            "examples": [
+              "pending"
+            ]
+          },
+          "transaction_id": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "description": "Identifier of the transaction. Will be null when status is `\"requested\"`. If you supplied a `request_id` on a withdrawal, use `GET /payment-agents/v1/withdraw/{request_id}` to track its status independently of `transaction_id`.",
+            "examples": [
+              123
+            ]
+          }
+        },
+        "required": [
+          "status",
+          "transaction_id"
         ]
       }
     }

@@ -1,0 +1,68 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Transfer (Deposit) Request",
+  "description": "Request for a payment agent to deposit funds into a client's Deriv wallet",
+  "type": "object",
+  "properties": {
+    "headers": {
+      "type": "object",
+      "properties": {
+        "Deriv-App-ID": {
+          "type": "string",
+          "description": "Application identifier"
+        },
+        "Authorization": {
+          "type": "string",
+          "description": "Bearer token for authentication",
+          "example": "Bearer YOUR_AUTH_TOKEN"
+        },
+        "Content-Type": {
+          "type": "string",
+          "enum": ["application/json"],
+          "description": "Content type"
+        }
+      },
+      "required": ["Deriv-App-ID", "Authorization", "Content-Type"]
+    },
+    "body": {
+      "type": "object",
+      "properties": {
+        "data": {
+          "type": "object",
+          "description": "Transfer parameters.",
+          "properties": {
+            "to_nickname": {
+              "type": "string",
+              "description": "Deriv account nickname of the client to receive the funds.",
+              "example": "client_nickname"
+            },
+            "amount": {
+              "type": "string",
+              "description": "Amount to transfer expressed as a decimal string.",
+              "example": "100.00"
+            },
+            "currency": {
+              "type": "string",
+              "description": "ISO 4217 currency code for the transfer. Must be supported by the authenticated payment agent.",
+              "example": "USD"
+            },
+            "notes": {
+              "type": "string",
+              "description": "Optional free-text notes for this transaction.",
+              "example": "Payment for services"
+            },
+            "request_id": {
+              "type": "string",
+              "pattern": "^[\\w\\-]{1,128}$",
+              "description": "Optional idempotency key, 1-128 characters (letters, digits, underscore, hyphen). Reusing a previous `request_id` returns `RequestIDUsed` instead of creating a duplicate transfer. Unlike withdrawals, a transfer's `request_id` cannot be used to look up status afterwards — transfers complete synchronously in this same response.",
+              "example": "a1b2c3d4-e5f6-7890-abcd-ef1234567890"
+            }
+          },
+          "required": ["to_nickname", "amount", "currency"]
+        }
+      },
+      "required": ["data"]
+    }
+  },
+  "required": ["headers", "body"]
+}
