@@ -493,15 +493,8 @@
           "Options Trading"
         ],
         "summary": "Buy a contract across multiple real accounts",
-        "description": "Buys the same options contract for multiple real-money accounts in a single call. Each entry in the request pairs an end-user Personal Access Token (PAT) with the real account to buy for, and the same contract parameters are applied to every account. Up to 100 entries are accepted per request. An entry whose token is invalid, or whose token does not own the paired account, is reported individually in the response without affecting the others; if no entry is valid the request is rejected with 400. This endpoint is for real-money accounts only — demo accounts are reported as per-account failures.",
+        "description": "Buys the same options contract for multiple real-money accounts in a single call. Authentication is by your application's `Deriv-App-ID` header together with the per-account Personal Access Tokens (PATs) supplied in the request body; no OAuth access token is required for this endpoint. Each entry in the request pairs an end-user PAT — which must carry the `trade` scope and own the paired account — with the real account to buy for, and the same contract parameters are applied to every account. Up to 100 entries are accepted per request. An entry whose token is invalid, or whose token does not own the paired account, is reported individually in the response without affecting the others; if no entry is valid the request is rejected with 400. This endpoint is for real-money accounts only — demo accounts are reported as per-account failures.",
         "operationId": "a1c2e3f4-5b6d-4e8a-9c1f-2d3b4a5c6e7f",
-        "security": [
-          {
-            "oauth2": [
-              "trade"
-            ]
-          }
-        ],
         "parameters": [
           {
             "name": "Deriv-App-ID",
@@ -637,15 +630,8 @@
           "Options Trading"
         ],
         "summary": "Buy a contract across multiple demo accounts",
-        "description": "Buys the same options contract for multiple demo accounts in a single call. Each entry in the request pairs an end-user Personal Access Token (PAT) with the demo account to buy for, and the same contract parameters are applied to every account. Up to 100 entries are accepted per request. An entry whose token is invalid, or whose token does not own the paired account, is reported individually in the response without affecting the others; if no entry is valid the request is rejected with 400. This endpoint is for demo accounts only — real-money accounts are reported as per-account failures.",
+        "description": "Buys the same options contract for multiple demo accounts in a single call. Authentication is by your application's `Deriv-App-ID` header together with the per-account Personal Access Tokens (PATs) supplied in the request body; no OAuth access token is required for this endpoint. Each entry in the request pairs an end-user PAT — which must carry the `trade` scope and own the paired account — with the demo account to buy for, and the same contract parameters are applied to every account. Up to 100 entries are accepted per request. An entry whose token is invalid, or whose token does not own the paired account, is reported individually in the response without affecting the others; if no entry is valid the request is rejected with 400. This endpoint is for demo accounts only — real-money accounts are reported as per-account failures.",
         "operationId": "b2d3f4a5-6c7e-4f9b-8a2d-3e4c5b6a7d8e",
-        "security": [
-          {
-            "oauth2": [
-              "trade"
-            ]
-          }
-        ],
         "parameters": [
           {
             "name": "Deriv-App-ID",
