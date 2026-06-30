@@ -25,6 +25,10 @@
     {
       "name": "Payment Agent",
       "description": "Endpoints for discovering payment agent profiles and executing payment-agent-facilitated deposits and withdrawals."
+    },
+    {
+      "name": "Identity",
+      "description": "Endpoints for accessing identity data for the authenticated user."
     }
   ],
   "paths": {
@@ -2570,6 +2574,103 @@
           }
         }
       }
+    },
+    "/account/v1/nickname": {
+      "get": {
+        "tags": [
+          "Identity"
+        ],
+        "summary": "Get the nickname for the authenticated user",
+        "description": "Returns the nickname associated with the authenticated user's identity. The brand is resolved from the `X-Brand` request header and the caller's identity is resolved from the `X-Client-ID` request header — both are set by the gateway and cannot be spoofed by the client.",
+        "operationId": "get-pii-nickname",
+        "security": [
+          {
+            "oauth2": [
+              "account_manage"
+            ]
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/NicknameResponse"
+                    },
+                    "errors": {
+                      "type": "array",
+                      "items": {},
+                      "description": "Empty on success."
+                    },
+                    "metadata": {
+                      "$ref": "#/components/schemas/ResponseMetadata"
+                    }
+                  },
+                  "required": [
+                    "data",
+                    "errors",
+                    "metadata"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request — missing `X-Brand` or `X-Client-Id` header.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized — missing or invalid Bearer token.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden — valid token but insufficient scope.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found — the brand could not be resolved (`BrandNotFound`) or no identity exists for the given client and brand (`IdentityNotFound`).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "504": {
+            "description": "Gateway timeout — the service did not respond in time.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
@@ -3533,6 +3634,111 @@
         "required": [
           "status",
           "transaction_id"
+        ]
+      },
+      "ResponseMetadata": {
+        "type": "object",
+        "description": "Request metadata included in every response.",
+        "properties": {
+          "endpoint": {
+            "type": "string",
+            "description": "The request URI."
+          },
+          "method": {
+            "type": "string",
+            "enum": [
+              "GET",
+              "POST",
+              "PUT",
+              "DELETE",
+              "PATCH"
+            ],
+            "description": "The HTTP method used for the request."
+          },
+          "timing": {
+            "type": "number",
+            "description": "Time in seconds for the service to process the request."
+          }
+        },
+        "required": [
+          "endpoint",
+          "method",
+          "timing"
+        ]
+      },
+      "ErrorItem": {
+        "type": "object",
+        "description": "A single error entry.",
+        "properties": {
+          "status": {
+            "type": "integer",
+            "description": "HTTP-equivalent status code for this error."
+          },
+          "code": {
+            "type": "string",
+            "description": "Machine-readable error code identifying what went wrong.",
+            "enum": [
+              "BrandNotFound",
+              "IdentityNotFound",
+              "InputError",
+              "InternalError"
+            ]
+          },
+          "message": {
+            "type": "string",
+            "description": "Human-readable description of the error condition."
+          }
+        },
+        "required": [
+          "status",
+          "code"
+        ]
+      },
+      "ErrorResponse": {
+        "type": "object",
+        "description": "Standard error envelope. `data` is empty. `errors` contains one entry describing what went wrong.",
+        "properties": {
+          "data": {
+            "type": "object",
+            "description": "Always an empty object on error.",
+            "examples": [
+              {}
+            ]
+          },
+          "errors": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ErrorItem"
+            },
+            "description": "One or more error entries."
+          },
+          "metadata": {
+            "$ref": "#/components/schemas/ResponseMetadata"
+          }
+        },
+        "required": [
+          "data",
+          "errors",
+          "metadata"
+        ]
+      },
+      "NicknameResponse": {
+        "type": "object",
+        "description": "Nickname data for the authenticated user's identity.",
+        "properties": {
+          "external_reference_id": {
+            "type": "string",
+            "format": "uuid",
+            "description": "The external reference ID for this Identity."
+          },
+          "nickname": {
+            "type": "string",
+            "description": "The nickname associated with this Identity."
+          }
+        },
+        "required": [
+          "external_reference_id",
+          "nickname"
         ]
       }
     }
