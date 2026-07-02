@@ -18,20 +18,37 @@ jobs:
       contents: write
       issues: write
     steps:
+      # Mint a short-lived installation token from the org GitHub App. Classic
+      # PATs are no longer usable as CI secrets — the deriv-com org forbids
+      # classic PATs with a lifetime > 3 days. Scoped to only the two repos this
+      # job touches: deriv-api-schemas (push + release) and deriv-api-v2 (read
+      # the private release asset below). The token is revoked when the job ends.
+      # Safe to run before checkout: this action does not write to the workspace.
+      - name: Mint GitHub App token
+        id: app_token
+        uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1 # v3.2.0
+        with:
+          app-id: ${{ secrets.CLIENT_ID_GHAPP }}
+          private-key: ${{ secrets.PRIVATE_KEY_GHAPP }}
+          owner: deriv-com
+          repositories: |
+            deriv-api-v2
+            deriv-api-schemas
+
       # Checkout first so the working directory is the repo. actions/checkout
       # cleans the workspace before checking out, so it MUST run before any step
       # that writes files here (schemas.zip, release_notes.md) — otherwise those
       # files get deleted. See: publish failure on production_v20260608 tag.
-      # Use a PAT (not GITHUB_TOKEN) so the persisted credential used by
-      # `git push` below authenticates as a repo admin. The "PR restrictions"
-      # ruleset on master requires PRs; the github-actions[bot] cannot bypass
-      # it (repo rulesets reject the built-in Actions app as a bypass actor),
-      # but the admin role is granted bypass, so pushing as the PAT user works.
+      # Use the App token (not GITHUB_TOKEN) so the persisted credential used by
+      # `git push` below authenticates as the App. The "PR restrictions" ruleset
+      # on master requires PRs; the App must therefore be added as a bypass actor
+      # on that ruleset — just as the admin PAT user was granted bypass before —
+      # or the push is rejected.
       - name: Checkout repository
         uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
         with:
           ref: master
-          token: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
+          token: ${{ steps.app_token.outputs.token }}
 
       - name: Validate dispatch payload
         env:
@@ -62,12 +79,12 @@ jobs:
 
       - name: Download schemas.zip from deriv-api-v2 release
         env:
-          PERSONAL_ACCESS_TOKEN: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
+          APP_TOKEN: ${{ steps.app_token.outputs.token }}
           SOURCE_REPO: ${{ github.event.client_payload.source_repo }}
           TAG: ${{ github.event.client_payload.tag }}
           ARTIFACT_NAME: ${{ github.event.client_payload.artifact_name }}
         run: |
-          RELEASE_JSON=$(GH_TOKEN="$PERSONAL_ACCESS_TOKEN" \
+          RELEASE_JSON=$(GH_TOKEN="$APP_TOKEN" \
             gh api "repos/$SOURCE_REPO/releases/tags/$TAG")
 
           ASSET_COUNT=$(echo "$RELEASE_JSON" \
@@ -88,7 +105,7 @@ jobs:
 
           # Accept: application/octet-stream triggers redirect to the actual download URL
           curl -sSfL --retry 3 --max-time 120 \
-            -H "Authorization: Bearer $PERSONAL_ACCESS_TOKEN" \
+            -H "Authorization: Bearer $APP_TOKEN" \
             -H "Accept: application/octet-stream" \
             "$ASSET_URL" \
             -o "$ARTIFACT_NAME"
