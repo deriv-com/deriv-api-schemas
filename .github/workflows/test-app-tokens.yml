@@ -41,6 +41,7 @@ jobs:
         env:
           GH_TOKEN: ${{ steps.w.outputs.token }}
         run: |
+          echo "WRITE app slug (use this in the ruleset bypass list): ${{ steps.w.outputs.app-slug }}"
           echo "repo permission flags for WRITE token:"
           gh api repos/deriv-com/deriv-api-schemas --jq '.permissions'
           echo "--- definitive contents:write probe (creates a dangling blob, no ref change) ---"
