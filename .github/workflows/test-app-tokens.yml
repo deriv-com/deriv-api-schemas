@@ -1,0 +1,52 @@
+# TEMPORARY — delete after verifying the GitHub App wiring.
+# Runs automatically when this branch is pushed (no default-branch / tag needed).
+name: Test GitHub App tokens
+
+on:
+  push:
+    branches: [ci/receiver-github-app-token]
+  workflow_dispatch:
+
+permissions: {}
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Mint WRITE token (deriv-api-schemas)
+        id: w
+        uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1 # v3.2.0
+        with:
+          app-id: ${{ secrets.CLIENT_ID_GHAPP_WRITE }}
+          private-key: ${{ secrets.PRIVATE_KEY_GHAPP_WRITE }}
+          owner: deriv-com
+          repositories: deriv-api-schemas
+
+      - name: Verify WRITE access on deriv-api-schemas
+        env:
+          GH_TOKEN: ${{ steps.w.outputs.token }}
+        run: |
+          echo "Token permissions on deriv-api-schemas:"
+          gh api repos/deriv-com/deriv-api-schemas --jq '.permissions'
+          PUSH=$(gh api repos/deriv-com/deriv-api-schemas --jq '.permissions.push')
+          if [ "$PUSH" != "true" ]; then
+            echo "::error::WRITE app token lacks push access on deriv-api-schemas"
+            exit 1
+          fi
+          echo "WRITE app OK — push access confirmed."
+
+      - name: Mint READ token (deriv-api-v2)
+        id: r
+        uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1 # v3.2.0
+        with:
+          app-id: ${{ secrets.CLIENT_ID_GHAPP }}
+          private-key: ${{ secrets.PRIVATE_KEY_GHAPP }}
+          owner: deriv-com
+          repositories: deriv-api-v2
+
+      - name: Verify READ access on deriv-api-v2 releases
+        env:
+          GH_TOKEN: ${{ steps.r.outputs.token }}
+        run: |
+          COUNT=$(gh api repos/deriv-com/deriv-api-v2/releases --jq 'length')
+          echo "READ app can list $COUNT releases on deriv-api-v2 — read access confirmed."
