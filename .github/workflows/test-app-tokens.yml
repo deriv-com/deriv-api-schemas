@@ -41,7 +41,15 @@ jobs:
         env:
           GH_TOKEN: ${{ steps.w.outputs.token }}
         run: |
-          echo "push access on deriv-api-schemas: $(gh api repos/deriv-com/deriv-api-schemas --jq '.permissions.push')"
+          echo "repo permission flags for WRITE token:"
+          gh api repos/deriv-com/deriv-api-schemas --jq '.permissions'
+          echo "--- definitive contents:write probe (creates a dangling blob, no ref change) ---"
+          if gh api repos/deriv-com/deriv-api-schemas/git/blobs \
+               -f content="write-probe" -f encoding="utf-8" --jq '.sha'; then
+            echo "RESULT: contents:write CONFIRMED (blob created)"
+          else
+            echo "RESULT: contents:write DENIED"
+          fi
 
       - name: Mint READ token (deriv-api-v2)
         id: r
