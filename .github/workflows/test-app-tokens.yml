@@ -1,5 +1,7 @@
 # TEMPORARY — delete after verifying the GitHub App wiring.
-# Runs automatically when this branch is pushed (no default-branch / tag needed).
+# Runs automatically when this branch is pushed. Reports which org secrets
+# actually reach this repo's Actions context (values are masked; only lengths
+# are printed), then tries to mint tokens.
 name: Test GitHub App tokens
 
 on:
@@ -13,8 +15,22 @@ jobs:
   test:
     runs-on: ubuntu-latest
     steps:
+      - name: Which app secrets are visible to deriv-api-schemas?
+        env:
+          CID_READ: ${{ secrets.CLIENT_ID_GHAPP }}
+          PK_READ: ${{ secrets.PRIVATE_KEY_GHAPP }}
+          CID_WRITE: ${{ secrets.CLIENT_ID_GHAPP_WRITE }}
+          PK_WRITE: ${{ secrets.PRIVATE_KEY_GHAPP_WRITE }}
+        run: |
+          present() { if [ -n "$1" ]; then echo "present (${#1} chars)"; else echo "MISSING / empty"; fi; }
+          echo "CLIENT_ID_GHAPP         : $(present "$CID_READ")"
+          echo "PRIVATE_KEY_GHAPP       : $(present "$PK_READ")"
+          echo "CLIENT_ID_GHAPP_WRITE   : $(present "$CID_WRITE")"
+          echo "PRIVATE_KEY_GHAPP_WRITE : $(present "$PK_WRITE")"
+
       - name: Mint WRITE token (deriv-api-schemas)
         id: w
+        continue-on-error: true
         uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1 # v3.2.0
         with:
           app-id: ${{ secrets.CLIENT_ID_GHAPP_WRITE }}
@@ -23,20 +39,15 @@ jobs:
           repositories: deriv-api-schemas
 
       - name: Verify WRITE access on deriv-api-schemas
+        if: steps.w.outcome == 'success'
         env:
           GH_TOKEN: ${{ steps.w.outputs.token }}
         run: |
-          echo "Token permissions on deriv-api-schemas:"
-          gh api repos/deriv-com/deriv-api-schemas --jq '.permissions'
-          PUSH=$(gh api repos/deriv-com/deriv-api-schemas --jq '.permissions.push')
-          if [ "$PUSH" != "true" ]; then
-            echo "::error::WRITE app token lacks push access on deriv-api-schemas"
-            exit 1
-          fi
-          echo "WRITE app OK — push access confirmed."
+          echo "push access: $(gh api repos/deriv-com/deriv-api-schemas --jq '.permissions.push')"
 
       - name: Mint READ token (deriv-api-v2)
         id: r
+        continue-on-error: true
         uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1 # v3.2.0
         with:
           app-id: ${{ secrets.CLIENT_ID_GHAPP }}
@@ -45,8 +56,8 @@ jobs:
           repositories: deriv-api-v2
 
       - name: Verify READ access on deriv-api-v2 releases
+        if: steps.r.outcome == 'success'
         env:
           GH_TOKEN: ${{ steps.r.outputs.token }}
         run: |
-          COUNT=$(gh api repos/deriv-com/deriv-api-v2/releases --jq 'length')
-          echo "READ app can list $COUNT releases on deriv-api-v2 — read access confirmed."
+          echo "deriv-api-v2 releases visible: $(gh api repos/deriv-com/deriv-api-v2/releases --jq 'length')"
