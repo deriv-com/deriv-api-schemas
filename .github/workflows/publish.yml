@@ -18,37 +18,48 @@ jobs:
       contents: write
       issues: write
     steps:
-      # Mint a short-lived installation token from the org GitHub App. Classic
-      # PATs are no longer usable as CI secrets — the deriv-com org forbids
-      # classic PATs with a lifetime > 3 days. Scoped to only the two repos this
-      # job touches: deriv-api-schemas (push + release) and deriv-api-v2 (read
-      # the private release asset below). The token is revoked when the job ends.
-      # Safe to run before checkout: this action does not write to the workspace.
-      - name: Mint GitHub App token
-        id: app_token
+      # Two short-lived installation tokens, minted from the org GitHub Apps.
+      # Classic PATs are no longer usable as CI secrets — the deriv-com org
+      # forbids classic PATs with a lifetime > 3 days. Both tokens are revoked
+      # when the job ends. Safe to run before checkout: the action does not write
+      # to the workspace.
+      #
+      # WRITE app (CLIENT_ID_GHAPP_WRITE), scoped to this repo, backs the
+      # `git push` to master below. The "PR restrictions" ruleset on master
+      # requires PRs; the App must therefore be a bypass actor on that ruleset
+      # (as the admin PAT user was before) or the push is rejected.
+      - name: Mint WRITE token (deriv-api-schemas)
+        id: write_token
+        uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1 # v3.2.0
+        with:
+          app-id: ${{ secrets.CLIENT_ID_GHAPP_WRITE }}
+          private-key: ${{ secrets.PRIVATE_KEY_GHAPP_WRITE }}
+          owner: deriv-com
+          repositories: deriv-api-schemas
+
+      # READ app (CLIENT_ID_GHAPP), enabled org-wide, reads the private
+      # schemas.zip release asset back from deriv-api-v2 (a cross-repo read).
+      - name: Mint READ token (deriv-api-v2)
+        id: read_token
         uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1 # v3.2.0
         with:
           app-id: ${{ secrets.CLIENT_ID_GHAPP }}
           private-key: ${{ secrets.PRIVATE_KEY_GHAPP }}
           owner: deriv-com
-          repositories: |
-            deriv-api-v2
-            deriv-api-schemas
+          repositories: deriv-api-v2
 
       # Checkout first so the working directory is the repo. actions/checkout
       # cleans the workspace before checking out, so it MUST run before any step
       # that writes files here (schemas.zip, release_notes.md) — otherwise those
       # files get deleted. See: publish failure on production_v20260608 tag.
-      # Use the App token (not GITHUB_TOKEN) so the persisted credential used by
-      # `git push` below authenticates as the App. The "PR restrictions" ruleset
-      # on master requires PRs; the App must therefore be added as a bypass actor
-      # on that ruleset — just as the admin PAT user was granted bypass before —
-      # or the push is rejected.
+      # Use the WRITE token (not GITHUB_TOKEN) so the persisted credential used
+      # by `git push` below authenticates as the write App, a bypass actor on the
+      # "PR restrictions" ruleset — just as the admin PAT user was before.
       - name: Checkout repository
         uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
         with:
           ref: master
-          token: ${{ steps.app_token.outputs.token }}
+          token: ${{ steps.write_token.outputs.token }}
 
       - name: Validate dispatch payload
         env:
@@ -79,7 +90,7 @@ jobs:
 
       - name: Download schemas.zip from deriv-api-v2 release
         env:
-          APP_TOKEN: ${{ steps.app_token.outputs.token }}
+          APP_TOKEN: ${{ steps.read_token.outputs.token }}
           SOURCE_REPO: ${{ github.event.client_payload.source_repo }}
           TAG: ${{ github.event.client_payload.tag }}
           ARTIFACT_NAME: ${{ github.event.client_payload.artifact_name }}
