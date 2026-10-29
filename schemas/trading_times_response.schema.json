@@ -53,7 +53,7 @@
                             "type": "string"
                           },
                           "times": {
-                            "description": "Open, close and settlement times",
+                            "description": "Open, close and settlement times. All times are in UTC. `--` means the market is closed for the day. `23:59:59` means the market closes at the end of the day.",
                             "type": "object"
                           },
                           "trading_days": {

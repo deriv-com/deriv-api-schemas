@@ -8,7 +8,7 @@
   "required": ["trading_times"],
   "properties": {
     "trading_times": {
-      "description": "Date to receive market opening times for. (`yyyy-mm-dd` format. `today` can also be specified).",
+      "description": "Date to receive market opening times for. Can be specified in `yyyy-mm-dd` format or `today` can also be specified, in both cases the date is in UTC timezone.",
       "type": "string",
       "pattern": "^([0-9]{4}-[0-9]{1,2}-[0-9]{1,2}|today)$"
     },
