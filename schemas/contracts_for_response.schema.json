@@ -81,6 +81,13 @@
                 "type": "string",
                 "examples": ["daily", "intraday", "tick"]
               },
+              "growth_rate_barrier_offsets": {
+                "description": "Barrier offsets per available Accumulator growth rate.",
+                "type": "array",
+                "items": {
+                  "type": "number"
+                }
+              },
               "growth_rate_range": {
                 "description": "Growth rate range.",
                 "type": "array"

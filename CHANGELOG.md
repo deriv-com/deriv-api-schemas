@@ -6,6 +6,24 @@ Newest first. Entries are added automatically by the publish workflow.
 
 <!-- changelog-entries -->
 
+## production_v20261110_0 — 2026-11-10
+
+_Schema changes since `production_v20261105_1`_
+
+### Changed schema files
+
+- `auto_list_response.schema.json`
+- `balance_response.schema.json`
+- `buy_request.schema.json`
+- `contract_update_response.schema.json`
+- `contracts_for_response.schema.json`
+- `proposal_open_contract_response.schema.json`
+- `proposal_response.schema.json`
+- `trading_times_response.schema.json`
+- `transaction_response.schema.json`
+
+[Release](https://github.com/deriv-com/deriv-api-schemas/releases/tag/production_v20261110_0)
+
 ## production_v20261028_0 — 2026-10-29
 
 _Schema changes since `production_v20261027_0`_

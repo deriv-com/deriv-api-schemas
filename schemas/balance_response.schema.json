@@ -24,7 +24,7 @@
           "examples": ["USD"]
         },
         "id": {
-          "description": "A per-connection unique identifier. Can be passed to the `forget` API call to unsubscribe.",
+          "description": "A per-connection unique identifier for a balance subscription. Can be passed to the `forget` API call to unsubscribe.",
           "type": "string",
           "examples": ["c84a793b-8a87-7999-ce10-9b22f7ceead3"]
         },

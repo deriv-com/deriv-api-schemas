@@ -71,13 +71,13 @@
               "description": "Absolute difference between high/low barrier and spot",
               "type": "string",
               "pattern": "^[+-]?[0-9]+\\.?[0-9]*$",
-              "examples": ["2.123"]
+              "examples": [2.123]
             },
             "high_barrier": {
               "description": "High barrier calculated based on current spot",
               "type": "string",
               "pattern": "^[+-]?[0-9]+\\.?[0-9]*$",
-              "examples": ["42.123"]
+              "examples": [42.123]
             },
             "last_tick_epoch": {
               "description": "Epoch of last tick considered for stat chart",
@@ -87,7 +87,7 @@
               "description": "Low barrier calculated based on current spot",
               "type": "string",
               "pattern": "^[+-]?[0-9]+\\.?[0-9]*$",
-              "examples": ["42.123"]
+              "examples": [42.123]
             },
             "maximum_payout": {
               "description": "Maximum payout that user can get out of a contract, contract will close automatically if payout reaches this number",
@@ -144,7 +144,7 @@
           "type": "string"
         },
         "id": {
-          "description": "A per-connection unique identifier. Can be passed to the `forget` API call to unsubscribe.",
+          "description": "A per-connection unique identifier. For streaming proposals, it can be passed to `buy` or `forget`. IDs returned by unary proposals are informational and cannot be used to purchase a contract or unsubscribe.",
           "type": "string",
           "examples": ["c84a793b-8a87-7999-ce10-9b22f7ceead3"]
         },
@@ -282,12 +282,12 @@
             "max_payout": {
               "description": "[Only for Accumulators] Maximum payout for the contract.",
               "type": "string",
-              "examples": ["4000.00"]
+              "examples": "4000.00"
             },
             "max_ticks": {
               "description": "[Only for Accumulators] Maximum ticks for the contract.",
               "type": "integer",
-              "examples": [75]
+              "examples": 75
             },
             "payout": {
               "description": "Contains information for minimum and maximum payout amount for the contract.",
@@ -297,7 +297,7 @@
                 "max": {
                   "description": "Maximum payout allowed",
                   "type": "string",
-                  "examples": ["1000.00"]
+                  "examples": "1000.00"
                 }
               }
             },
@@ -309,12 +309,12 @@
                 "max": {
                   "description": "Maximum stake allowed",
                   "type": "string",
-                  "examples": ["1000.00"]
+                  "examples": "1000.00"
                 },
                 "min": {
                   "description": "Minimum stake allowed",
                   "type": "string",
-                  "examples": ["0.01"]
+                  "examples": "0.01"
                 }
               }
             },
@@ -326,12 +326,12 @@
                 "max": {
                   "description": "Maximum stop loss amount",
                   "type": "string",
-                  "examples": ["1000.00"]
+                  "examples": "1000.00"
                 },
                 "min": {
                   "description": "Minimum stop loss amount",
                   "type": "string",
-                  "examples": ["0.51"]
+                  "examples": "0.51"
                 }
               }
             },
@@ -343,12 +343,12 @@
                 "max": {
                   "description": "Maximum take profit amount",
                   "type": "string",
-                  "examples": ["1000.00"]
+                  "examples": "1000.00"
                 },
                 "min": {
                   "description": "Minimum take profit amount",
                   "type": "string",
-                  "examples": ["0.10"]
+                  "examples": "0.10"
                 }
               }
             }

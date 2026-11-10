@@ -20,6 +20,10 @@
               "description": "Localized display name",
               "type": "string"
             },
+            "display_order_amount": {
+              "description": "Stop loss amount for display purpose.",
+              "type": ["null", "string"]
+            },
             "order_amount": {
               "description": "Stop loss amount",
               "type": ["null", "number"]
@@ -42,6 +46,10 @@
             "display_name": {
               "description": "Localized display name",
               "type": "string"
+            },
+            "display_order_amount": {
+              "description": "Take profit amount for display purpose.",
+              "type": ["null", "string"]
             },
             "order_amount": {
               "description": "Take profit amount",

@@ -118,7 +118,7 @@
           }
         },
         "auto_run_id": {
-          "description": "Identifier of the automated run that purchased this contract.",
+          "description": "Identifier of the automated run that purchased this contract",
           "type": "string"
         },
         "barrier": {

@@ -21,7 +21,6 @@
             "additionalProperties": false,
             "required": [
               "contract_template",
-              "contracts",
               "run_id",
               "start_time",
               "status",
@@ -34,43 +33,6 @@
               "contract_template": {
                 "description": "Contract template used for each purchase in this run",
                 "type": "object"
-              },
-              "contracts": {
-                "description": "List of contracts purchased during this run",
-                "type": "array",
-                "items": {
-                  "description": "A contract purchased by this run",
-                  "type": "object",
-                  "additionalProperties": false,
-                  "required": ["buy_price", "contract_id", "purchase_time"],
-                  "properties": {
-                    "buy_price": {
-                      "description": "Price paid to purchase the contract",
-                      "type": "number"
-                    },
-                    "contract_id": {
-                      "description": "Internal contract identifier",
-                      "type": "integer"
-                    },
-                    "contract_status": {
-                      "description": "Current status of the contract",
-                      "type": "string",
-                      "enum": ["open", "won", "lost"]
-                    },
-                    "purchase_time": {
-                      "description": "Epoch of the contract purchase time",
-                      "type": "integer"
-                    },
-                    "sell_price": {
-                      "description": "Price received when the contract was sold or settled (absent if contract is still open)",
-                      "type": "number"
-                    },
-                    "sell_time": {
-                      "description": "Epoch of the contract sell or settlement time (absent if contract is still open)",
-                      "type": "integer"
-                    }
-                  }
-                }
               },
               "run_id": {
                 "description": "Unique identifier for the automated trading run",

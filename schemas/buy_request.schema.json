@@ -24,10 +24,6 @@
           "type": "number",
           "minimum": 0
         },
-        "app_markup_percentage": {
-          "description": "[Optional] Markup added to contract prices (as a percentage of contract payout)",
-          "type": "number"
-        },
         "barrier": {
           "description": "[Optional] Barrier for the contract (or last digit prediction for digit contracts). Contracts less than 24 hours in duration would need a relative barrier (barriers which need +/-), where entry spot would be adjusted accordingly with that amount to define a barrier, except for Synthetic Indices as they support both relative and absolute barriers.",
           "type": "string",
