@@ -47,7 +47,7 @@
                 "type": "integer"
               },
               "expiry_time": {
-                "description": "Epoch of expiry time",
+                "description": "Epoch of expiry time. Omitted for contracts without an expiry time.",
                 "type": "integer"
               },
               "longcode": {
