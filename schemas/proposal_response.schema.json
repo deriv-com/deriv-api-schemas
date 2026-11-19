@@ -144,7 +144,7 @@
           "type": "string"
         },
         "id": {
-          "description": "A per-connection unique identifier. For streaming proposals, it can be passed to `buy` or `forget`. IDs returned by unary proposals are informational and cannot be used to purchase a contract or unsubscribe.",
+          "description": "A per-connection unique identifier. It can be passed to `buy` to purchase the contract.",
           "type": "string",
           "examples": ["c84a793b-8a87-7999-ce10-9b22f7ceead3"]
         },

@@ -13,7 +13,7 @@
       "type": "integer"
     },
     "price": {
-      "description": "Minimum price at which to sell the contract, or `0` for 'sell at market'.",
+      "description": "Minimum price at which to sell the contract, or `0` for 'sell at market'. Note, that the parameter is ignored for non-binary contract, in particular multipliers, accumulators, turbos, and vanilla options.",
       "type": "number"
     },
     "passthrough": {
