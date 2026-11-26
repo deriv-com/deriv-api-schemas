@@ -22,7 +22,7 @@
       "description": "Template defining the contract parameters to be used for each purchase in this run",
       "type": "object",
       "additionalProperties": false,
-      "required": ["contract_type", "currency", "underlying_symbol"],
+      "required": ["basis", "contract_type", "currency", "underlying_symbol"],
       "properties": {
         "amount": {
           "description": "[Optional] Initial stake or payout value",
@@ -40,9 +40,9 @@
           "pattern": "^(?=.{1,20}$)[+-]?[0-9]+\\.?[0-9]*$"
         },
         "basis": {
-          "description": "[Optional] Indicates whether amount is 'payout' or 'stake' for binary options",
+          "description": "Indicates that the `amount` field is a stake value. Stake is the only supported basis and the field is required.",
           "type": "string",
-          "enum": ["payout", "stake"]
+          "enum": ["stake"]
         },
         "contract_type": {
           "description": "A valid contract type",

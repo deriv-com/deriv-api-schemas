@@ -22,8 +22,7 @@
           "submarket",
           "trade_count",
           "underlying_symbol",
-          "underlying_symbol_name",
-          "underlying_symbol_type"
+          "underlying_symbol_name"
         ],
         "properties": {
           "exchange_is_open": {
@@ -62,10 +61,6 @@
           },
           "underlying_symbol_name": {
             "description": "Symbol display name.",
-            "type": "string"
-          },
-          "underlying_symbol_type": {
-            "description": "Symbol type (forex, commodities, etc).",
             "type": "string"
           }
         }
